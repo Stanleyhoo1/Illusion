@@ -3,10 +3,12 @@ import json
 from typing import Any, Dict, List
 
 from dotenv import load_dotenv
-from strands import Agent, tool
+from strands import Agent
 from strands.models.gemini import GeminiModel
 
-from agents.tools.extract_tool import extract_context
+
+# Adjust this import to your actual fetch tool
+from agents.tools.fetch_tool import fetch_url
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -67,6 +69,7 @@ extract_subagent = Agent(
     tools=[extract_context],
 )
 
+
 @tool
 def extract_agent(sources: List[Dict[str, Any]], task_prompt: str) -> Dict[str, Any]:
     """
@@ -79,10 +82,7 @@ def extract_agent(sources: List[Dict[str, Any]], task_prompt: str) -> Dict[str, 
     Output: structured extraction JSON
     """
 
-    message = json.dumps({
-        "sources": sources,
-        "task_prompt": task_prompt
-    })
+    message = json.dumps({"sources": sources, "task_prompt": task_prompt})
 
     result = extract_subagent(message)
 
@@ -112,4 +112,3 @@ def extract_agent(sources: List[Dict[str, Any]], task_prompt: str) -> Dict[str, 
         }
 
     return data
-
