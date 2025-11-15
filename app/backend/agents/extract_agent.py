@@ -22,7 +22,7 @@ Given an array of policy URLs and a task prompt (e.g., "extract only data collec
 you MUST visit each URL, read its content using the fetch tool, and extract ONLY the relevant information.
 
 Rules:
-1. Use the `fetch_url` tool to retrieve clean webpage text.
+1. Use the `extract_context` tool to retrieve clean webpage text.
 2. Extract ONLY information relevant to the task_prompt.
    Examples:
      - If task_prompt = "data collection", extract only:
@@ -35,7 +35,7 @@ Rules:
 3. Ignore unrelated sections (billing terms, shipping, product info, etc.).
 4. For each URL, return a JSON object containing:
    - url
-   - content_summary: short, focused summary (2–5 sentences)
+   - content_summary: short, focused summary (2-5 sentences)
    - extracted_points: list of short bullet points containing ONLY relevant facts
    - relevance: float between 0 and 1 (confidence in relevance)
 

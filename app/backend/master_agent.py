@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from strands import Agent, tool
 from strands.models.gemini import GeminiModel
 from string import Template
-from strands.types.exceptions import StructuredOutputException
 
 from playwright.sync_api import (
     sync_playwright,
@@ -103,11 +102,8 @@ def master_agent(query: str):
         model=model,
         system_prompt=MASTER_SYSTEM_PROMPT,
     )
-    try:
-        result = agent(query)
-    except StructuredOutputException:
-        print(agent.messages[-1])
-        return
+    result = agent(query)
+
     text = getattr(result, "text", str(result)).strip()
 
     # Remove Markdown JSON fencing if the model adds it
@@ -126,7 +122,6 @@ def master_agent(query: str):
 query = (
     "Find Anthropic data collection and usage practices and return structured "
     "findings and sources where we can find their policies."
-    "Only use the best 5 sources"
 )
 
 res = master_agent(query)

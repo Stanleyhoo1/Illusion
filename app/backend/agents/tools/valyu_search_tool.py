@@ -24,7 +24,7 @@ def valyu_search(prompt: str) -> SearchResponse | None:
     """
     response = valyu.search(
         prompt,
-        max_num_results=20,  # Limit to top 5 results
+        max_num_results=5,  # Limit to top 5 results
         # max_price=10,  # Maximum price per thousand queries (CPM)
         # fast_mode=False,  # Enable fast mode for quicker, shorter results
     )
