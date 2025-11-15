@@ -1,4 +1,4 @@
-from strands_tools import tool
+from strands import tool
 
 
 @tool
