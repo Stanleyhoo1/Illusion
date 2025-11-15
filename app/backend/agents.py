@@ -16,6 +16,8 @@ from playwright.sync_api import (
 import re
 from search_agent import search_agent
 
+from pprint import pprint
+
 # -------------------------------------------------------------------
 # Env / LLM
 # -------------------------------------------------------------------
@@ -70,4 +72,4 @@ def master_agent(query: str):
 
 query = "Find Anthropic data collection and usage practices and return structured findings and sources where we can find their policies."
 
-master_agent(query)
+res = master_agent(query)
