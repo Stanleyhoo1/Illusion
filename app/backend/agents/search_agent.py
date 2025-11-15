@@ -1,5 +1,4 @@
 import os
-import json
 from typing import Any, Literal
 
 
@@ -146,9 +145,8 @@ def search_agent(company_or_url: str) -> dict[str, Any]:
         # if text.endswith("```"):
         #     text = text[:-3]
         # text = text.strip()
-        print(result)
-        data: Result = result.structured_output
-        res: dict[str, str] = data.model_dump_json(indent=2)
+        data: Result = result.structured_output  # pyright: ignore[reportAssignmentType]
+        res: dict[str, str] = data.model_dump_json(indent=2)  # pyright: ignore[reportAssignmentType]
         # try:
         #     data = json.loads(text)
         # except json.JSONDecodeError:
@@ -166,4 +164,10 @@ def search_agent(company_or_url: str) -> dict[str, Any]:
 
     except StructuredOutputException:
         print(search_subagent.messages[-1])
-        return
+        return {
+            "status": "error",
+            "company_or_url": company_or_url,
+            "resolved_domain": None,
+            "sources": [],
+            "error_message": f"Could not parse JSON from search_subagent: {search_subagent.messages[-1]['content'][:200]}",
+        }
