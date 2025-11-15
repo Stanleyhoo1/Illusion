@@ -54,8 +54,12 @@ jsonschema-specifications==2025.9.1
 jupyter_client==8.6.3
 jupyter_core==5.9.1
 jupyterlab_pygments==0.3.0
-langchain-core==0.3.79
+langchain-core==1.0.5
 langchain-valyu==0.3.4
+langgraph==1.0.3
+langgraph-checkpoint==3.0.1
+langgraph-prebuilt==1.0.4
+langgraph-sdk==0.2.9
 langsmith==0.4.43
 lazy-object-proxy==1.12.0
 markdown-it-py==4.0.0
@@ -80,6 +84,7 @@ opentelemetry-instrumentation-threading==0.59b0
 opentelemetry-sdk==1.38.0
 opentelemetry-semantic-conventions==0.59b0
 orjson==3.11.4
+ormsgpack==1.12.0
 packaging==25.0
 pandocfilters==1.5.1
 parso==0.8.5
@@ -106,6 +111,7 @@ pydantic_core==2.41.4
 pyee==13.0.0
 Pygments==2.19.2
 PyJWT==2.10.1
+pypdf==6.2.0
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.1
 python-multipart==0.0.20
@@ -153,6 +159,7 @@ wcwidth==0.2.14
 webencodings==0.5.1
 websockets==15.0.1
 wrapt==1.17.3
+xxhash==3.6.0
 yarg==0.1.9
 yarl==1.22.0
 zipp==3.23.0
