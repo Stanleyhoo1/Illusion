@@ -1,9 +1,11 @@
-from strands import tool
 import os
+
+from strands import tool
 
 VALYU_API_KEY = os.getenv("VALYU_API_KEY")
 HOLISTIC_AI_TEAM_ID = os.getenv("TEAM_ID")
 HOLISTIC_AI_API_TOKEN = os.getenv("API_TOKEN")
+
 
 @tool
 def extract_context(sourceDictStr: str) -> str:
@@ -83,7 +85,9 @@ def extract_context(sourceDictStr: str) -> str:
                 tag.decompose()
 
             raw_text = soup.get_text("\n")
-            raw_text = "\n".join(line.strip() for line in raw_text.splitlines() if line.strip())
+            raw_text = "\n".join(
+                line.strip() for line in raw_text.splitlines() if line.strip()
+            )
 
         except Exception as e:
             return json.dumps({"error": f"Failed to fetch URL: {e}"})
@@ -124,9 +128,12 @@ Your JSON MUST follow this structure exactly:
     try:
         parsed = json.loads(response.content)
         return json.dumps(parsed, indent=2)
-    except:
+    except Exception:
         # fallback: wrap content as text
-        return json.dumps({
-            "error": "Model did not return valid JSON.",
-            "raw_model_output": response.content
-        }, indent=2)
+        return json.dumps(
+            {
+                "error": "Model did not return valid JSON.",
+                "raw_model_output": response.content,
+            },
+            indent=2,
+        )
