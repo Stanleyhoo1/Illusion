@@ -14,7 +14,7 @@ from playwright.sync_api import (
 )
 
 import re
-from search_agent import search_agent
+from agents.search_agent import search_agent
 
 from pprint import pprint
 
