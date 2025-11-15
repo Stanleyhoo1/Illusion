@@ -14,6 +14,7 @@ from playwright.sync_api import (
 )
 
 import re
+from search_agent import search_agent
 
 # -------------------------------------------------------------------
 # Env / LLM
@@ -28,33 +29,45 @@ model = GeminiModel(
 )
 
 MASTER_SYSTEM_PROMPT = """
-You are the MASTER CONTROLLER AGENT.
+You are the MASTER AGENT.
 
-Your job is to orchestrate multiple specialized agents to complete a transparency audit.
+You have access to a tool called `search_agent` that finds
+privacy / data-usage related URLs for a company or website.
 
-You must:
-- ALWAYS return valid pure JSON.
-- NEVER include explanation, markdown, or commentary.
-- ONLY output JSON objects.
-- Use the schema:
+When given a task, you MUST:
+1. Call `search_agent` with an appropriate query string.
+2. Wait for the tool result.
+3. Then reply with FINAL JSON in this schema:
 
 {
-  "action": "complete" | "call_agent" | "error",
-  "next_agent": "<agent-name-or-null>",
-  "payload": { }
+  "status": "success" | "error",
+  "query": "<original user query>",
+  "sources": [...],          // copied / adapted from search_agent output
+  "notes": "<optional notes or null>"
 }
 
-Meaning:
-- "call_agent" → master wants a sub-agent tool to run.
-- "complete" → master is done and returning final structured results.
-- "error" → master encountered an issue; payload must contain details.
+Output ONLY JSON, no markdown, no explanations.
 """
 
-def master_agent():
+
+
+def master_agent(query: str):
     agent = Agent(
+        tools=[search_agent],
         model=model,
-        tools = [],
         system_prompt=MASTER_SYSTEM_PROMPT,
-        response_format="json"
     )
-    return agent
+    result = agent(query)
+    text = getattr(result, "text", str(result)).strip()
+    # Remove Markdown JSON fencing if the model adds it
+    if text.startswith("```json"):
+        text = text[7:]  # remove ```json
+    if text.endswith("```"):
+        text = text[:-3]
+    text = text.strip()
+    data = json.loads(text)
+    return data
+
+query = "Find Anthropic data collection and usage practices and return structured findings and sources where we can find their policies."
+
+master_agent(query)
