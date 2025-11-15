@@ -16,160 +16,121 @@ from playwright.sync_api import (
 import re
 import tldextract
 
+from tools.valyu_search_tool import valyu_search
+
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
 SEARCH_AGENT_SYSTEM = """
 You are the SEARCH AGENT.
 
-Your job is to discover official policy URLs for a given company or website.
+Input: a company name (e.g. "Anthropic") OR a URL
+(e.g. "https://www.anthropic.com/").
 
-Return ONLY VALID JSON, no text or markdown.
+You have access to a web search tool called `valyu_search_tool`.
+Use it to find pages related to the company's data and privacy practices.
 
-Steps:
-1. If the input is a COMPANY NAME, perform a web search to find the official homepage.
-2. If the input is a URL, normalize it to the base domain.
-3. Search for these pages:
-   - Privacy Policy
-   - Terms of Service
-   - Cookie Policy
-   - Data Usage / Data Protection
-4. Use web search or fallback heuristics to detect likely URL paths.
-5. Output all discovered URLs in clean JSON.
+Your goals:
+1. Resolve what company / site is being referred to.
+2. Use `valyu_search_tool` with smart queries to find:
+   - Privacy policy
+   - Terms of service / terms of use
+   - Cookie policy
+   - Data protection / data usage pages
+   - Any other clearly relevant pages about data collection / usage.
+3. For each relevant result, infer:
+   - policy_type:
+       "privacy_policy" | "terms_of_service" | "cookie_policy"
+       | "data_protection" | "other"
+   - url
+   - title
+   - a short summary (2–4 sentences) focused ONLY on:
+       - what data is collected,
+       - how it is used,
+       - how it is shared,
+       - retention / storage,
+       - user rights or controls.
+   - relevance: a float between 0 and 1
+4. Prefer official pages on the company's own domain.
+5. Avoid duplicates (same URL more than once).
 
-Return format:
+You MUST ALWAYS return ONLY valid JSON, with this exact schema:
+
 {
   "status": "success" | "error",
-  "domain": "<canonical domain>",
-  "policies": [
-    {"type": "privacy_policy", "url": "..."},
-    {"type": "terms_of_service", "url": "..."},
-    {"type": "cookie_policy", "url": "..."},
-    {"type": "data_usage", "url": "..."}
-  ]
+  "company_or_url": "<original input>",
+  "resolved_domain": "<domain-or-null>",
+  "sources": [
+    {
+      "url": "<string>",
+      "policy_type": "privacy_policy" | "terms_of_service"
+                     | "cookie_policy" | "data_protection" | "other",
+      "title": "<string or null>",
+      "summary": "<string or null>",
+      "relevance": <float between 0 and 1>
+    }
+  ],
+  "error_message": "<string or null>"
 }
+
+Rules:
+- No markdown, no commentary, no code fences.
+- If something fails, set "status": "error" and explain in "error_message".
 """
 
-@tool
-def search_agent(query: str):
+search_subagent_model = GeminiModel(
+    client_args={"api_key": GEMINI_API_KEY},
+    model_id="gemini-2.5-flash",
+    params={"temperature": 0.1},
+)
+
+search_subagent = Agent(
+    model=search_subagent_model,
+    system_prompt=SEARCH_AGENT_SYSTEM,
+    tools=[valyu_search],
+)
+
+
+# ---------------------------------------------------------
+# Tool wrapper: callable by the MASTER AGENT
+# ---------------------------------------------------------
+
+@tool()
+def search_agent(company_or_url: str) -> Dict[str, Any]:
     """
+    Tool wrapper around the search subagent.
+
     Input: company name or URL
-    Output: JSON with identified policy URLs
+    Output: JSON with identified policy-related sources.
     """
+    # Run the subagent with the raw company_or_url as the user message.
+    result = search_subagent(company_or_url)
 
-    # Create agent instance
-    model = GeminiModel(
-        client_args={"api_key": GEMINI_API_KEY},
-        model_id="gemini-2.5-flash",
-        params={"temperature": 0.1},
-    )
+    # Depending on Strands version, `result` may already be a dict.
+    if isinstance(result, dict):
+        return result
 
-    agent = Agent(
-        tools=[],
-        model=model,
-        system_prompt=SEARCH_AGENT_SYSTEM,
-    )
+    text = getattr(result, "text", str(result)).strip()
 
-    # ---------------------------
-    # Normalize domain
-    # ---------------------------
-    def extract_domain(q):
-        if q.startswith("http://") or q.startswith("https://"):
-            ext = tldextract.extract(q)
-            return f"{ext.domain}.{ext.suffix}"
-        # treat it as company name → later resolved via search
-        return None
-
-    domain = extract_domain(query)
-
-    results = {
-        "status": "success",
-        "domain": None,
-        "policies": []
-    }
-
-    # ---------------------------
-    # 1. Try to resolve company → domain via Exa search
-    # ---------------------------
-    homepage = None
-    if domain is None:
-        try:
-            search = agent.tool.exa_search(
-                query=f"{query} official website",
-                text=True
-            )
-            # choose the top result
-            if search and "results" in search and len(search["results"]) > 0:
-                homepage = search["results"][0]["url"]
-                ext = tldextract.extract(homepage)
-                domain = f"{ext.domain}.{ext.suffix}"
-        except Exception:
-            pass
-
-    results["domain"] = domain
-
-    # Fallback if domain still not resolved
-    if domain is None:
-        return {
-            "status": "error",
-            "message": "Domain could not be resolved from query."
-        }
-
-    base_url = f"https://{domain}"
-
-    # ---------------------------
-    # 2. Build likely policy URLs
-    # ---------------------------
-    candidate_paths = [
-        ("privacy_policy", ["privacy", "privacy-policy", "legal/privacy"]),
-        ("terms_of_service", ["terms", "terms-of-service", "legal/terms"]),
-        ("cookie_policy", ["cookie-policy", "cookies"]),
-        ("data_usage", ["data", "data-protection", "data-usage"])
-    ]
-
-    # ---------------------------
-    # 3. Try Exa search to confirm real URLs
-    # ---------------------------
-    discovered = {}
+    # Be robust to occasional ```json fences, just in case.
+    if text.startswith("```json"):
+        text = text[7:]
+    if text.startswith("```"):
+        text = text[3:]
+    if text.endswith("```"):
+        text = text[:-3]
+    text = text.strip()
 
     try:
-        indexed = agent.tool.exa_search(
-            query=f"{domain} privacy policy terms cookies",
-            text=True
-        )
-        if indexed and "results" in indexed:
-            for r in indexed["results"]:
-                url = r.get("url", "")
-                url_lower = url.lower()
+        data = json.loads(text)
+    except json.JSONDecodeError:
+        # Fallback error object if the model misbehaves
+        data = {
+            "status": "error",
+            "company_or_url": company_or_url,
+            "resolved_domain": None,
+            "sources": [],
+            "error_message": f"Could not parse JSON from search_subagent: {text[:200]}",
+        }
 
-                if "privacy" in url_lower:
-                    discovered["privacy_policy"] = url
-                if "terms" in url_lower:
-                    discovered["terms_of_service"] = url
-                if "cookie" in url_lower:
-                    discovered["cookie_policy"] = url
-                if "data" in url_lower:
-                    discovered["data_usage"] = url
-    except Exception:
-        pass
-
-    # ---------------------------
-    # 4. Add fallback heuristic URLs
-    # ---------------------------
-    for policy_type, paths in candidate_paths:
-        if policy_type not in discovered:
-            for p in paths:
-                candidate_url = f"{base_url}/{p}"
-                discovered[policy_type] = candidate_url
-                break
-
-    # ---------------------------
-    # 5. Assemble JSON output
-    # ---------------------------
-    for ptype, url in discovered.items():
-        results["policies"].append({
-            "type": ptype,
-            "url": url
-        })
-
-    return results
+    return data
