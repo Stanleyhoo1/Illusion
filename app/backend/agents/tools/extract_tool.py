@@ -1,6 +1,14 @@
+import json
 import os
+import re
 
-from strands import tool
+from urllib.parse import urlparse
+
+
+import requests
+from bs4 import BeautifulSoup
+from pypdf import PdfReader
+from strands import Agent, tool
 
 VALYU_API_KEY = os.getenv("VALYU_API_KEY")
 HOLISTIC_AI_TEAM_ID = os.getenv("TEAM_ID")
@@ -8,19 +16,17 @@ HOLISTIC_AI_API_TOKEN = os.getenv("API_TOKEN")
 
 
 @tool
-def extract_context(sourceDictStr: str) -> str:
+def extract_context(agent: Agent, source_dict_str: str) -> str:
     """Extracts important information from a policy source described by a JSON string
     and returns a structured JSON output.
-    """
 
-    import re
-    import json
-    import os
-    from urllib.parse import urlparse
-    import requests
-    from bs4 import BeautifulSoup
-    from pypdf import PdfReader
-    from strands import get_chat_model
+    Args:
+        agent (Agent): the agent itself
+        source_dict_str (str): the source dictionary
+
+    Returns:
+        str: json
+    """
 
     # -------------- Helper: classify the input ----------------
     def classify_input(s: str) -> str:
@@ -45,7 +51,7 @@ def extract_context(sourceDictStr: str) -> str:
 
     # -------------- Parse JSON ----------------
     try:
-        sourceDict = json.loads(sourceDictStr)
+        sourceDict = json.loads(source_dict_str)
     except json.JSONDecodeError:
         return "Invalid JSON string."
 
@@ -93,7 +99,7 @@ def extract_context(sourceDictStr: str) -> str:
             return json.dumps({"error": f"Failed to fetch URL: {e}"})
 
     # -------------- LLM Processing ----------------
-    llm = get_chat_model("claude-3-5-sonnet")
+    llm = agent
 
     prompt = f"""
 You are an expert policy analyst.
@@ -122,18 +128,18 @@ Your JSON MUST follow this structure exactly:
 }}
 """
 
-    response = llm.invoke(prompt)
+    response = str(llm(prompt))
 
     # Validate that response is valid JSON (LLMs can slip)
     try:
-        parsed = json.loads(response.content)
+        parsed = json.loads(response)
         return json.dumps(parsed, indent=2)
     except Exception:
         # fallback: wrap content as text
         return json.dumps(
             {
                 "error": "Model did not return valid JSON.",
-                "raw_model_output": response.content,
+                "raw_model_output": response,
             },
             indent=2,
         )
