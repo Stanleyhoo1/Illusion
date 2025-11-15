@@ -1,26 +1,15 @@
-import json
-import os
-import pathlib
-from typing import Any, Dict, Optional
+from typing import Union
+
+from fastapi import FastAPI
+
+app = FastAPI()
 
 
-from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field
+@app.get("/")
+def read_root():
+    return {"Hello": "World"}
 
-from draft_email import draft_emails
-from random_data import generate_random_estate_data
-from database import (
-    create_session,
-    get_session,
-    init_db,
-    save_survey_data,
-    update_task_status,
-)
-from agents import get_post_death_checklist
-from compute_agent import compute_figures
-from search import search_agent
-from langgraph_workflow import create_langgraph_workflow
 
-load_dotenv()
+@app.get("/items/{item_id}")
+def read_item(item_id: int, q: Union[str, None] = None):
+    return {"item_id": item_id, "q": q}
