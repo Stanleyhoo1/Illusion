@@ -98,10 +98,6 @@ def search_agent(company_or_url: str) -> dict[str, Any]:
     # Run the subagent with the raw company_or_url as the user message.
     result = search_subagent(company_or_url)
 
-    # Depending on Strands version, `result` may already be a dict.
-    if isinstance(result, dict):
-        return result
-
     text = getattr(result, "text", str(result)).strip()
 
     # Be robust to occasional ```json fences, just in case.
@@ -117,6 +113,7 @@ def search_agent(company_or_url: str) -> dict[str, Any]:
         data = json.loads(text)
     except json.JSONDecodeError:
         # Fallback error object if the model misbehaves
+
         data = {
             "status": "error",
             "company_or_url": company_or_url,
