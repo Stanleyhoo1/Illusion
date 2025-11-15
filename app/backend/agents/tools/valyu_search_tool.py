@@ -1,5 +1,7 @@
 import os
 
+from datetime import datetime
+
 from dotenv import load_dotenv
 from strands import tool
 
@@ -17,14 +19,17 @@ class NameAndLink(BaseModel):
     """Model that contains the document type (name) and the document URL."""
 
     document_name: str = Field(description="Name of the document")
-    url: str = Field(description="URL of the document")
+    src: str = Field(description="Source of the document")
+    summary: str = Field(description="Summary of the document")
+    relevance: str = Field(description="Why the document is relevant")
+    timestamps: datetime = Field(description="Retrieval date")
 
 
-class Results(BaseModel):
+class SearchResults(BaseModel):
     """Model that contains a list of results."""
 
-    results: list[dict[str, str]] = Field(
-        description="The list of results, where the first field is the document name, and the second field is the URL"
+    results: list[NameAndLink] = Field(
+        description="The list of results"  # , where the first field is the document name ('document_name'), and the second field is the source (url or path) of the document ('src')"
     )
 
 
@@ -60,6 +65,8 @@ if __name__ == "__main__":
         model_id="gemini-2.5-flash",
         params={"temperature": 0.1},
     )
-    agent = Agent(model=model, tools=[valyu_search], structured_output_model=Results)
+    agent = Agent(
+        model=model, tools=[valyu_search], structured_output_model=SearchResults
+    )
 
     pprint(agent("Google Policies").structured_output)
