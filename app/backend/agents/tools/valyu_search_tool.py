@@ -1,11 +1,8 @@
 import os
 
-from datetime import datetime
-
 from dotenv import load_dotenv
 from strands import tool
 
-from pydantic import BaseModel, Field
 from valyu import SearchResponse, Valyu
 
 
@@ -13,24 +10,6 @@ load_dotenv()
 
 VALYU_API_KEY = os.getenv("VALYU_API_KEY")
 valyu = Valyu(api_key=VALYU_API_KEY)
-
-
-class NameAndLink(BaseModel):
-    """Model that contains the document type (name) and the document URL."""
-
-    document_name: str = Field(description="Name of the document")
-    src: str = Field(description="Source of the document")
-    summary: str = Field(description="Summary of the document")
-    relevance: str = Field(description="Why the document is relevant")
-    timestamps: datetime = Field(description="Retrieval date")
-
-
-class SearchResults(BaseModel):
-    """Model that contains a list of results."""
-
-    results: list[NameAndLink] = Field(
-        description="The list of results"  # , where the first field is the document name ('document_name'), and the second field is the source (url or path) of the document ('src')"
-    )
 
 
 @tool
@@ -66,7 +45,8 @@ if __name__ == "__main__":
         params={"temperature": 0.1},
     )
     agent = Agent(
-        model=model, tools=[valyu_search], structured_output_model=SearchResults
+        model=model,
+        tools=[valyu_search],
     )
 
-    pprint(agent("Google Policies").structured_output)
+    pprint(agent("Google Policies"))
