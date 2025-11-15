@@ -17,10 +17,10 @@ const iconItems: IconItem[] = [
 ];
 
 const dockItems = [
-  { icon: <VscHome size={18} className="text-gray-900" />, label: 'Home', onClick: () => alert('Home!') },
-  { icon: <VscArchive size={18} className="text-gray-900" />, label: 'Archive', onClick: () => alert('Archive!') },
-  { icon: <VscAccount size={18} className="text-gray-900" />, label: 'Profile', onClick: () => alert('Profile!') },
-  { icon: <VscSettingsGear size={18} className="text-gray-900" />, label: 'Settings', onClick: () => alert('Settings!') },
+  { icon: <div className="text-gray-900"><VscHome size={18} /></div>, label: 'Home', onClick: () => alert('Home!') },
+  { icon: <div className="text-gray-900"><VscArchive size={18} /></div>, label: 'Archive', onClick: () => alert('Archive!') },
+  { icon: <div className="text-gray-900"><VscAccount size={18} /></div>, label: 'Profile', onClick: () => alert('Profile!') },
+  { icon: <div className="text-gray-900"><VscSettingsGear size={18} /></div>, label: 'Settings', onClick: () => alert('Settings!') },
 ];
 
 const App: React.FC = () => {
@@ -82,7 +82,7 @@ const App: React.FC = () => {
             <GlassSurface width={480} height={500} borderRadius={28} className="w-full max-w-md lg:max-w-full xl:max-w-[480px] mx-auto lg:mx-0">
                <div className="flex flex-col justify-center h-full items-center text-center">
                 <div className="w-24 h-24 mb-6 flex items-center justify-center rounded-full bg-gray-200/50 border border-gray-300/40">
-                  <FiFileText className="text-5xl text-gray-400" />
+                  <div className="text-5xl text-gray-400"><FiFileText /></div>
                 </div>
                 <h2 className="text-2xl font-bold mb-3 bg-gradient-to-r from-zinc-700 to-zinc-500 bg-clip-text text-transparent">
                   Document Preview
