@@ -1,20 +1,10 @@
 import os
 import json
-import threading
-from typing import Optional
+from typing import Any
 
 from dotenv import load_dotenv
 from strands import Agent, tool
 from strands.models.gemini import GeminiModel
-from string import Template
-
-from playwright.sync_api import (
-    sync_playwright, Page, Browser, BrowserContext,
-    TimeoutError as PWTimeout
-)
-
-import re
-import tldextract
 
 from agents.tools.valyu_search_tool import valyu_search
 
@@ -96,8 +86,9 @@ search_subagent = Agent(
 # Tool wrapper: callable by the MASTER AGENT
 # ---------------------------------------------------------
 
+
 @tool
-def search_agent(company_or_url: str) -> dict[str, any]:
+def search_agent(company_or_url: str) -> dict[str, Any]:
     """
     Tool wrapper around the search subagent.
 
