@@ -9,13 +9,16 @@ from strands.models.gemini import GeminiModel
 from string import Template
 
 from playwright.sync_api import (
-    sync_playwright, Page, Browser, BrowserContext,
-    TimeoutError as PWTimeout
+    sync_playwright,
+    Page,
+    Browser,
+    BrowserContext,
+    TimeoutError as PWTimeout,
 )
 
 import re
-from agents.search_agent import search_agent
-from agents.extract_agent import extract_agent
+from .agents.search_agent import search_agent
+from .agents.extract_agent import extract_agent
 
 from pprint import pprint
 

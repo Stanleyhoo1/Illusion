@@ -3,12 +3,13 @@ import json
 from typing import Any, Dict, List
 
 from dotenv import load_dotenv
-from strands import Agent
+from strands import Agent, tool
 from strands.models.gemini import GeminiModel
 
 
 # Adjust this import to your actual fetch tool
-from agents.tools.fetch_tool import fetch_url
+# from agents.tools.fetch_tool import fetch_url
+from .tools import extract_context
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")

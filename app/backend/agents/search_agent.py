@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 from strands import Agent, tool
 from strands.models.gemini import GeminiModel
 
-from agents.tools.valyu_search_tool import valyu_search
+from .tools.valyu_search_tool import valyu_search
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
