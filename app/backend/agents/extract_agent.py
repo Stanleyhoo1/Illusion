@@ -6,7 +6,10 @@ from dotenv import load_dotenv
 from strands import Agent, tool
 from strands.models.gemini import GeminiModel
 
-from agents.tools.extract_tool import extract_context
+
+# Adjust this import to your actual fetch tool
+# from agents.tools.fetch_tool import fetch_url
+from .tools import extract_context
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")

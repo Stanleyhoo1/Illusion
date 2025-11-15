@@ -1,12 +1,14 @@
 import os
-import json
-from typing import Any
+from typing import Any, Literal
+
 
 from dotenv import load_dotenv
+from pydantic import BaseModel, Field
 from strands import Agent, tool
 from strands.models.gemini import GeminiModel
+from strands.types.exceptions import StructuredOutputException
 
-from agents.tools.valyu_search_tool import valyu_search
+from .tools.valyu_search_tool import valyu_search
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -44,23 +46,23 @@ Your goals:
 4. Prefer official pages on the company's own domain.
 5. Avoid duplicates (same URL more than once).
 
-You MUST ALWAYS return ONLY valid JSON, with this exact schema:
+You MUST ALWAYS return an output that follows the structured output, with this exact schema:
 
 {
   "status": "success" | "error",
   "company_or_url": "<original input>",
-  "resolved_domain": "<domain-or-null>",
+  "resolved_domain": "<domain or None>",
   "sources": [
     {
       "url": "<string>",
       "policy_type": "privacy_policy" | "terms_of_service"
                      | "cookie_policy" | "data_protection" | "other",
-      "title": "<string or null>",
-      "summary": "<string or null>",
+      "title": "<string or None>",
+      "summary": "<string or None>",
       "relevance": <float between 0 and 1>
     }
   ],
-  "error_message": "<string or null>"
+  "error_message": "<string or None>"
 }
 
 Rules:
@@ -68,6 +70,39 @@ Rules:
 - If something fails, set "status": "error" and explain in "error_message".
 - Sort sources by relevance descending.
 """
+
+
+class Source(BaseModel):
+    """A source of data."""
+
+    url: str = Field(description="URL of the given policy")
+    policy_type: (
+        Literal["privacy_policy"]
+        | Literal["terms_of_service"]
+        | Literal["cookie_policy"]
+        | Literal["data_protection"]
+        | Literal["other"]
+    ) = Field(description="The type of the policy")
+    title: str | None = Field(description="The title of the policy")
+    summary: str | None = Field(description="The summary of the policy")
+    relevance: float = Field(
+        description="A score on how relevant the result is", ge=0, le=1
+    )
+
+
+class Result(BaseModel):
+    """Result for the Search Agent to return."""
+
+    status: Literal["success"] | Literal["error"] = Field(
+        description="The status of the result"
+    )
+    company_or_url: str = Field(description="The original input")
+    resolved_domain: str | None = Field(description="The resolved domain")
+    sources: list[Source] = Field(description="The list of sources")
+    error_message: str | None = Field(
+        description="The error message if there is one, otherwise null", default=None
+    )
+
 
 search_subagent_model = GeminiModel(
     client_args={"api_key": GEMINI_API_KEY},
@@ -79,6 +114,7 @@ search_subagent = Agent(
     model=search_subagent_model,
     system_prompt=SEARCH_AGENT_SYSTEM,
     tools=[valyu_search],
+    structured_output_model=Result,
 )
 
 
@@ -96,30 +132,42 @@ def search_agent(company_or_url: str) -> dict[str, Any]:
     Output: JSON with identified policy-related sources.
     """
     # Run the subagent with the raw company_or_url as the user message.
-    result = search_subagent(company_or_url)
-
-    text = getattr(result, "text", str(result)).strip()
-
-    # Be robust to occasional ```json fences, just in case.
-    if text.startswith("```json"):
-        text = text[7:]
-    if text.startswith("```"):
-        text = text[3:]
-    if text.endswith("```"):
-        text = text[:-3]
-    text = text.strip()
-
     try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        # Fallback error object if the model misbehaves
+        result = search_subagent(company_or_url)
+        # result = result
+        # text = getattr(result, "text", str(result)).strip()
 
-        data = {
+        # # Be robust to occasional ```json fences, just in case.
+        # if text.startswith("```json"):
+        #     text = text[7:]
+        # if text.startswith("```"):
+        #     text = text[3:]
+        # if text.endswith("```"):
+        #     text = text[:-3]
+        # text = text.strip()
+        data: Result = result.structured_output  # pyright: ignore[reportAssignmentType]
+        res: dict[str, str] = data.model_dump_json(indent=2)  # pyright: ignore[reportAssignmentType]
+        # try:
+        #     data = json.loads(text)
+        # except json.JSONDecodeError:
+        #     # Fallback error object if the model misbehaves
+
+        #     data = {
+        #         "status": "error",
+        #         "company_or_url": company_or_url,
+        #         "resolved_domain": None,
+        #         "sources": [],
+        #         "error_message": f"Could not parse JSON from search_subagent: {text[:200]}",
+        #     }
+
+        return res
+
+    except StructuredOutputException:
+        print(search_subagent.messages[-1])
+        return {
             "status": "error",
             "company_or_url": company_or_url,
             "resolved_domain": None,
             "sources": [],
-            "error_message": f"Could not parse JSON from search_subagent: {text[:200]}",
+            "error_message": f"Could not parse JSON from search_subagent: {search_subagent.messages[-1]['content'][:200]}",
         }
-
-    return data

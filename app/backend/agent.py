@@ -1,26 +1,15 @@
 import os
 import json
-import threading
-from typing import Optional
+from pprint import pprint
 
 from dotenv import load_dotenv
-from strands import Agent, tool
+from strands import Agent
 from strands.models.gemini import GeminiModel
-from string import Template
+from strands.types.exceptions import StructuredOutputException
 
-from playwright.sync_api import (
-    sync_playwright,
-    Page,
-    Browser,
-    BrowserContext,
-    TimeoutError as PWTimeout,
-)
-
-import re
 from .agents.search_agent import search_agent
 from .agents.extract_agent import extract_agent
 
-from pprint import pprint
 
 # -------------------------------------------------------------------
 # Env / LLM
@@ -102,8 +91,11 @@ def master_agent(query: str):
         model=model,
         system_prompt=MASTER_SYSTEM_PROMPT,
     )
-    result = agent(query)
-
+    try:
+        result = agent(query)
+    except StructuredOutputException:
+        print(agent.messages[-1])
+        return
     text = getattr(result, "text", str(result)).strip()
 
     # Remove Markdown JSON fencing if the model adds it
@@ -122,6 +114,7 @@ def master_agent(query: str):
 query = (
     "Find Anthropic data collection and usage practices and return structured "
     "findings and sources where we can find their policies."
+    # "Only use the best 5 sources"
 )
 
 res = master_agent(query)
