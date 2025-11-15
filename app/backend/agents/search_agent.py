@@ -1,5 +1,3 @@
-# Search for policies and links
-
 import os
 import json
 import threading
@@ -18,7 +16,7 @@ from playwright.sync_api import (
 import re
 import tldextract
 
-from tools.valyu_search_tool import valyu_search
+from agents.tools.valyu_search_tool import valyu_search
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -46,7 +44,7 @@ Your goals:
        | "data_protection" | "other"
    - url
    - title
-   - a short summary (2–4 sentences) focused ONLY on:
+   - a short summary (2-4 sentences) focused ONLY on:
        - what data is collected,
        - how it is used,
        - how it is shared,
@@ -78,6 +76,7 @@ You MUST ALWAYS return ONLY valid JSON, with this exact schema:
 Rules:
 - No markdown, no commentary, no code fences.
 - If something fails, set "status": "error" and explain in "error_message".
+- Sort sources by relevance descending.
 """
 
 search_subagent_model = GeminiModel(
@@ -97,8 +96,8 @@ search_subagent = Agent(
 # Tool wrapper: callable by the MASTER AGENT
 # ---------------------------------------------------------
 
-@tool()
-def search_agent(company_or_url: str) -> Dict[str, Any]:
+@tool
+def search_agent(company_or_url: str) -> dict[str, any]:
     """
     Tool wrapper around the search subagent.
 
