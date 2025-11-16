@@ -1,0 +1,33 @@
+execution_duration_ms: 20708
+request_preview: '[{"role": "user", "content": [{"text": "{\"search_result\": {\"status\":
+  \"success\", \"company_or_url\": \"Anthropic\", \"resolved_domain\": \"anthropic.com\",
+  \"sources\": [{\"url\": \"https://support.anthropic.com/en/articles/9020432-what-cookies-does-anthropic-use\",
+  \"policy_type\": \"cookie_policy\", \"title\": \"What Cookies Does Anthropic Use?
+  | Anthropic Help Center\", \"summary\": \"Anthropic uses necessary cookies for basic
+  service functionality (authentication, preferences, security), analytics cookies
+  to enhance performance and understand user interaction, and marketing cookies for
+  targeted advertising. Users can control cookie settings via ''Privacy Choices''
+  on their website footer, ''Your privacy choices'' in the Claude.ai menu, or by enabling
+  global privacy controls in their browser.\", \"relevance\": 0.97, \"relevance_explanation\":
+  \"Directly addresses the cookie policy and provides detailed information on types
+  of cookies and user controls.\"}, {\"url\": \"https://pr...'
+request_time: '2025-11-16T05:52:54.896Z'
+response_preview: '{"status": "success", "query": "Summarize Anthropic''s privacy
+  policies, terms of service, and data practices (data collection, usage, sharing,
+  retention, user rights, cookies, API usage, etc.).", "summary": {"overview": "Anthropic''s
+  privacy practices emphasize user consent for data used in model training, robust
+  security measures, and transparency regarding data handling. They collect data for
+  service functionality, improvement, and, with user consent, for model training.
+  While they do not sell user data, they utilize various third-party cookies for analytics
+  and marketing. Users have significant control over their data, including consent
+  for model training, cookie preferences, and data deletion options. Data retention
+  periods vary based on consent and data type.", "key_findings": ["User data from
+  Free, Pro, and Max plans, including Claude Code, can be used for model training
+  only with explicit user consent.", "Anthropic does not sell user data to third parties
+  and states that data ...'
+state: OK
+trace_id: tr-6f9e73fb69884d60609cb0566c16ecc2
+trace_location:
+  mlflow_experiment:
+    experiment_id: '0'
+  type: MLFLOW_EXPERIMENT

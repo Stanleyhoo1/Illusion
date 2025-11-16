@@ -1,0 +1,34 @@
+execution_duration_ms: 18112
+request_preview: '[{"role": "user", "content": [{"text": "{\"search_result\": {\"status\":
+  \"success\", \"company_or_url\": \"Anthropic\", \"resolved_domain\": \"anthropic.com\",
+  \"sources\": [{\"url\": \"https://www.anthropic.com/news/updates-to-our-consumer-terms\",
+  \"policy_type\": \"privacy_policy\", \"title\": \"Updates to Consumer Terms and
+  Privacy Policy \\\\\\\\ Anthropic\", \"summary\": \"Anthropic has updated its Consumer
+  Terms and Privacy Policy for Claude Free, Pro, and Max plans. Users now have a choice
+  to allow their chats and coding sessions to be used for AI model training; this
+  setting is opt-out by default for existing users and selectable during signup for
+  new users. If users opt-in, data retention is extended to five years for new or
+  resumed chats and coding sessions, compared to 30 days if they opt-out. Deleted
+  conversations are not used for future model training. Anthropic states it uses tools
+  to filter or obfuscate sensitive data and does not sell user data to third parties.
+  Th...'
+request_time: '2025-11-16T10:46:11.792Z'
+response_preview: '{"status": "success", "query": "Summarize Anthropic''s privacy
+  policies, terms of service, and data practices (data collection, usage, sharing,
+  retention, user rights, cookies, API usage, etc.).", "summary": {"overview": "Anthropic''s
+  privacy policies for its consumer products (Claude Free, Pro, Max) have recently
+  been updated, notably shifting to an opt-out model for using user chats and coding
+  sessions for AI model training. If users opt-in (by not opting out), data retention
+  for these sessions extends significantly from 30 days to five years. Anthropic states
+  it does not sell user data to third parties and employs filtering for sensitive
+  information. For commercial services (Claude for Work, API), these specific model
+  training updates do not apply. Anthropic also uses various cookies for website functionality,
+  analytics, and marketing.", "key_findings": ["Anthropic''s consumer products (Claude
+  Free, Pro, Max) now use user chats and coding sessions for AI model training by
+  default fo...'
+state: OK
+trace_id: tr-3c78b1db506720e4b14fe3172c254e0d
+trace_location:
+  mlflow_experiment:
+    experiment_id: '0'
+  type: MLFLOW_EXPERIMENT
