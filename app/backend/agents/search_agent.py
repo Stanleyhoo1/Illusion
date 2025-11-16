@@ -43,6 +43,8 @@ Your goals:
    - relevance: a float between 0 and 1
 4. Prefer official pages on the company's own domain.
 5. Avoid duplicates (same URL more than once).
+6. If no relevant sources are found, explain why.
+7. Try to limit sources to 5-10 high-quality results, if some repeat the same information, pick the best ones to keep.
 
 You MUST ALWAYS return ONLY valid JSON, with this exact schema:
 
@@ -57,7 +59,8 @@ You MUST ALWAYS return ONLY valid JSON, with this exact schema:
                      | "cookie_policy" | "data_protection" | "other",
       "title": "<string or null>",
       "summary": "<string or null>",
-      "relevance": <float between 0 and 1>
+      "relevance": <float between 0 and 1>,
+      "relevance_explanation": "<brief explanation of relevance score>"
     }
   ],
   "error_message": "<string or null>"
@@ -67,6 +70,7 @@ Rules:
 - No markdown, no commentary, no code fences.
 - If something fails, set "status": "error" and explain in "error_message".
 - Sort sources by relevance descending.
+- ONLY use sources from the official company domain if possible, no third-party sites like Reddit.
 """
 
 search_subagent_model = GeminiModel(
@@ -94,32 +98,70 @@ def search_agent(company_or_url: str) -> dict[str, Any]:
 
     Input: company name or URL
     Output: JSON with identified policy-related sources.
+    Retries the subagent once if the first attempt fails or returns no sources.
     """
-    # Run the subagent with the raw company_or_url as the user message.
-    result = search_subagent(company_or_url)
+    last_error_text = None
 
-    text = getattr(result, "text", str(result)).strip()
+    for attempt in range(2):  # at most two tries
+        result = search_subagent(company_or_url)
 
-    # Be robust to occasional ```json fences, just in case.
-    if text.startswith("```json"):
-        text = text[7:]
-    if text.startswith("```"):
-        text = text[3:]
-    if text.endswith("```"):
-        text = text[:-3]
-    text = text.strip()
+        if isinstance(result, dict):
+            data = result
+        else:
+            text = getattr(result, "text", str(result)).strip()
 
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        # Fallback error object if the model misbehaves
+            # Strip possible fences
+            if text.startswith("```json"):
+                text = text[7:]
+            if text.startswith("```"):
+                text = text[3:]
+            if text.endswith("```"):
+                text = text[:-3]
+            text = text.strip()
 
-        data = {
-            "status": "error",
-            "company_or_url": company_or_url,
-            "resolved_domain": None,
-            "sources": [],
-            "error_message": f"Could not parse JSON from search_subagent: {text[:200]}",
-        }
+            try:
+                data = json.loads(text)
+            except json.JSONDecodeError:
+                last_error_text = text
+                data = {
+                    "status": "error",
+                    "company_or_url": company_or_url,
+                    "resolved_domain": None,
+                    "sources": [],
+                    "error_message": "JSON parse error in search_subagent",
+                }
 
-    return data
+        # If this attempt looks good, return immediately
+        if (
+            isinstance(data, dict)
+            and data.get("status") == "success"
+            and data.get("sources")
+        ):
+            # annotate how many attempts it took (optional)
+            data.setdefault("meta", {})
+            data["meta"]["attempts"] = attempt + 1
+            return data
+
+        # otherwise loop and try again
+
+    # If we reach here, both attempts failed or returned empty sources
+    # return the last error-ish thing we have
+    if isinstance(data, dict):
+        data.setdefault("meta", {})
+        data["meta"]["attempts"] = 2
+        if not data.get("error_message") and last_error_text:
+            data["error_message"] = (
+                data.get("error_message")
+                or f"search_agent failed twice; last raw text: {last_error_text[:200]}"
+            )
+        return data
+
+    # extreme fallback
+    return {
+        "status": "error",
+        "company_or_url": company_or_url,
+        "resolved_domain": None,
+        "sources": [],
+        "error_message": "search_agent failed twice with non-dict response",
+        "meta": {"attempts": 2},
+    }

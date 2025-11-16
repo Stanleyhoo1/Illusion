@@ -1,23 +1,25 @@
 import os
 import json
+import time
 import threading
-from typing import Optional
+from typing import Optional, Dict, Any
 
 from dotenv import load_dotenv
-from strands import Agent, tool
+from strands import Agent
 from strands.models.gemini import GeminiModel
 from string import Template
-
-from playwright.sync_api import (
-    sync_playwright, Page, Browser, BrowserContext,
-    TimeoutError as PWTimeout
-)
 
 import re
 from agents.search_agent import search_agent
 from agents.extract_agent import extract_agent
+from agents.summary_agent import summary_agent
 
-from pprint import pprint
+import mlflow
+import mlflow.strands
+
+# Enable tracing + token usage logging for Strands Agents
+mlflow.strands.autolog()
+
 
 # -------------------------------------------------------------------
 # Env / LLM
@@ -31,95 +33,255 @@ model = GeminiModel(
     params={"temperature": 0.1},
 )
 
-MASTER_SYSTEM_PROMPT = """
-You are the MASTER AGENT.
+def run_master_pipeline(
+    company_or_url: str,
+    user_query: Optional[str] = None,
+    task_prompt: str = "privacy policies, terms of service, and data practices"
+) -> Dict[str, Any]:
+    """
+    Deterministic master orchestrator:
+      1) call search_agent
+      2) call extract_agent
+      3) call summary_agent
+      4) assemble the final JSON object described in your MASTER_SYSTEM_PROMPT
+    """
 
-You have access to two tools:
+    if user_query is None:
+        user_query = (
+            f"Summarize {company_or_url}'s privacy policies, terms of service, "
+            f"and data practices (data collection, usage, sharing, retention, "
+            f"user rights, cookies, API usage, etc.)."
+        )
 
-1) search_agent(company_or_url: str) -> JSON
-   - Finds privacy / data-usage related URLs and returns a JSON object:
-     {
-       "status": "success" | "error",
-       "company_or_url": "...",
-       "resolved_domain": "... or null",
-       "sources": [ { "url": "...", "policy_type": "...", ... } ],
-       "error_message": "..."
-     }
+    t0 = time.time()
+    trace_steps = []
+    tools_used = []
 
-2) extract_agent(sources: list, task_prompt: str) -> JSON
-   - Takes the 'sources' array from search_agent and a task_prompt
-     (e.g. "data collection and usage practices") and returns:
-     {
-       "status": "success" | "error",
-       "task_prompt": "...",
-       "results": [
-         {
-           "url": "...",
-           "content_summary": "...",
-           "extracted_points": ["...", "..."],
-           "relevance": 0.0-1.0
-         }
-       ],
-       "error_message": "..."
-     }
+    # ---------------------------------------------------------------
+    # Step 1 – search_agent
+    # ---------------------------------------------------------------
+    search_step_index = len(trace_steps)
+    try:
+        search_result = search_agent(company_or_url=company_or_url)
+    except Exception as e:
+        total_ms = int((time.time() - t0) * 1000)
+        return {
+            "status": "error",
+            "query": user_query,
+            "search_result": None,
+            "extraction_result": None,
+            "final_summary": None,
+            "timing": {"estimated_total_ms": total_ms},
+            "trace": {
+                "tools_used": ["search_agent"],
+                "steps": [
+                    {
+                        "step_index": search_step_index,
+                        "action": "Call search_agent to resolve company and find policy URLs",
+                        "tool": "search_agent",
+                        "tool_input": f"company_or_url={company_or_url}",
+                        "tool_output_used": "exception",
+                        "reasoning": "Failed during search_agent call, so we cannot proceed."
+                    }
+                ],
+            },
+            "error_message": f"search_agent raised an exception: {e}",
+        }
 
-Your job, given a natural language user query, is to:
-
-1. Interpret the query and identify the target company / website.
-2. Call search_agent with an appropriate short query string
-   (usually the company name or official domain).
-3. Inspect the JSON returned by search_agent.
-   - If search_agent.status != "success" OR sources is empty,
-     you MUST return a FINAL JSON object with status "error".
-4. If search_agent succeeds, call extract_agent with:
-   - sources: the "sources" array from search_agent
-   - task_prompt: a short phrase summarising what to extract
-     (derived from the user query, e.g. "data collection and usage practices").
-5. After extract_agent returns, produce ONE FINAL JSON object with this schema:
-
-{
-  "status": "success" | "error",
-  "query": "<original user query>",
-  "search_result": { ...search_agent JSON... } | null,
-  "extraction_result": { ...extract_agent JSON... } | null,
-  "notes": "<optional notes for the caller or null>"
-}
-
-Rules:
-- You MUST call search_agent at least once for each user query.
-- If search_agent succeeds and returns sources, you MUST call extract_agent exactly once.
-- Output ONLY a single JSON object as described above.
-- NO markdown, NO explanations, NO code fences.
-"""
-
-
-def master_agent(query: str):
-    agent = Agent(
-        tools=[search_agent, extract_agent],
-        model=model,
-        system_prompt=MASTER_SYSTEM_PROMPT,
+    tools_used.append("search_agent")
+    trace_steps.append(
+        {
+            "step_index": search_step_index,
+            "action": "Call search_agent to resolve company and find policy URLs",
+            "tool": "search_agent",
+            "tool_input": f"company_or_url={company_or_url}",
+            "tool_output_used": "full search_agent JSON",
+            "reasoning": "We need a list of relevant policy URLs and metadata before extraction.",
+        }
     )
-    result = agent(query)
 
-    text = getattr(result, "text", str(result)).strip()
+    if not isinstance(search_result, dict) or search_result.get("status") != "success":
+        total_ms = int((time.time() - t0) * 1000)
+        return {
+            "status": "error",
+            "query": user_query,
+            "search_result": search_result,
+            "extraction_result": None,
+            "final_summary": None,
+            "timing": {"estimated_total_ms": total_ms},
+            "trace": {
+                "tools_used": tools_used,
+                "steps": trace_steps,
+            },
+            "error_message": "search_agent did not return a successful JSON payload.",
+        }
 
-    # Remove Markdown JSON fencing if the model adds it
-    if text.startswith("```json"):
-        text = text[7:]
-    if text.startswith("```"):
-        text = text[3:]
-    if text.endswith("```"):
-        text = text[:-3]
-    text = text.strip()
+    sources = search_result.get("sources") or []
+    if not sources:
+        total_ms = int((time.time() - t0) * 1000)
+        return {
+            "status": "error",
+            "query": user_query,
+            "search_result": search_result,
+            "extraction_result": None,
+            "final_summary": None,
+            "timing": {"estimated_total_ms": total_ms},
+            "trace": {
+                "tools_used": tools_used,
+                "steps": trace_steps,
+            },
+            "error_message": "search_agent returned no sources; nothing to extract from.",
+        }
 
-    data = json.loads(text)
-    return data
+    # ---------------------------------------------------------------
+    # Step 2 – extract_agent
+    # ---------------------------------------------------------------
+    extract_step_index = len(trace_steps)
+    try:
+        extraction_result = extract_agent(sources=sources, task_prompt=task_prompt)
+    except Exception as e:
+        total_ms = int((time.time() - t0) * 1000)
+        return {
+            "status": "error",
+            "query": user_query,
+            "search_result": search_result,
+            "extraction_result": None,
+            "final_summary": None,
+            "timing": {"estimated_total_ms": total_ms},
+            "trace": {
+                "tools_used": tools_used + ["extract_agent"],
+                "steps": trace_steps + [
+                    {
+                        "step_index": extract_step_index,
+                        "action": "Call extract_agent on sources with task_prompt",
+                        "tool": "extract_agent",
+                        "tool_input": f"sources=[{len(sources)} items], task_prompt={task_prompt!r}",
+                        "tool_output_used": "exception",
+                        "reasoning": "extract_agent failed; cannot continue to summary.",
+                    }
+                ],
+            },
+            "error_message": f"extract_agent raised an exception: {e}",
+        }
+
+    tools_used.append("extract_agent")
+    trace_steps.append(
+        {
+            "step_index": extract_step_index,
+            "action": "Call extract_agent on sources with task_prompt",
+            "tool": "extract_agent",
+            "tool_input": f"sources=[{len(sources)} items], task_prompt={task_prompt!r}",
+            "tool_output_used": "full extract_agent JSON",
+            "reasoning": "We need the structured extraction of only the relevant data practices before summarizing.",
+        }
+    )
+
+    # ---------------------------------------------------------------
+    # Step 3 – summary_agent
+    # ---------------------------------------------------------------
+    summary_step_index = len(trace_steps)
+    try:
+        final_summary = summary_agent(
+            search_result=search_result,
+            extraction_result=extraction_result,
+            user_query=user_query,
+        )
+    except Exception as e:
+        total_ms = int((time.time() - t0) * 1000)
+        return {
+            "status": "error",
+            "query": user_query,
+            "search_result": search_result,
+            "extraction_result": extraction_result,
+            "final_summary": None,
+            "timing": {"estimated_total_ms": total_ms},
+            "trace": {
+                "tools_used": tools_used + ["summary_agent"],
+                "steps": trace_steps + [
+                    {
+                        "step_index": summary_step_index,
+                        "action": "Call summary_agent to synthesize final report",
+                        "tool": "summary_agent",
+                        "tool_input": "search_result + extraction_result + user_query",
+                        "tool_output_used": "exception",
+                        "reasoning": "summary_agent failed while synthesizing the final JSON summary.",
+                    }
+                ],
+            },
+            "error_message": f"summary_agent raised an exception: {e}",
+        }
+
+    tools_used.append("summary_agent")
+    trace_steps.append(
+        {
+            "step_index": summary_step_index,
+            "action": "Call summary_agent to synthesize final report",
+            "tool": "summary_agent",
+            "tool_input": "search_result + extraction_result + user_query",
+            "tool_output_used": "full summary_agent JSON",
+            "reasoning": "This step produces the final structured report with ratings, risks, and advice.",
+        }
+    )
+
+    total_ms = int((time.time() - t0) * 1000)
+
+    # ---------------------------------------------------------------
+    # Final master JSON (exact structure you specified)
+    # ---------------------------------------------------------------
+    master = {
+        "status": "success",
+        "query": user_query,
+        "search_result": search_result,
+        "extraction_result": extraction_result,
+        "final_summary": final_summary,
+        "timing": {"estimated_total_ms": total_ms},
+        "trace": {
+            "tools_used": tools_used,
+            "steps": trace_steps,
+        },
+        "error_message": None,
+    }
+
+    # Get the most recent trace from MLflow
+    try:
+        last_trace_id = mlflow.get_last_active_trace_id()
+        trace = mlflow.get_trace(trace_id=last_trace_id)
+        usage = trace.info.token_usage  # dict: {'input_tokens': ..., 'output_tokens': ..., 'total_tokens': ...}
+
+        # Optionally also get per-span usage if you want super detailed breakdown
+        detailed_usage = []
+        for span in trace.data.spans:
+            span_usage = span.get_attribute("mlflow.chat.tokenUsage")
+            if span_usage:
+                cost_in = 0.3/1000000
+                cost_out = 2.5/1000000
+
+                input_cost = span_usage["input_tokens"] * cost_in
+                output_cost = span_usage["output_tokens"] * cost_out
+                detailed_usage.append({
+                    "span_name": span.name,
+                    "input_tokens": span_usage["input_tokens"],
+                    "output_tokens": span_usage["output_tokens"],
+                    "total_tokens": span_usage["total_tokens"],
+                    "total_cost_usd": input_cost + output_cost,
+                })
+    except Exception:
+        usage = None
+        detailed_usage = []
+
+    # Attach token usage into your final JSON
+    # (you can put this under `timing` or a new top-level field)
+    if isinstance(master, dict):
+        master.setdefault("timing", {})
+        master["timing"]["token_usage"] = usage
+        master["timing"]["token_usage_detailed"] = detailed_usage
+
+    return master
 
 
-query = (
-    "Find Anthropic data collection and usage practices and return structured "
-    "findings and sources where we can find their policies."
-)
+if __name__ == "__main__":
 
-res = master_agent(query)
-pprint(res)
+    res = run_master_pipeline("Anthropic")
+    print()
+    print("="*100)
+    print(json.dumps(res))

@@ -1,6 +1,7 @@
 import os
 import json
 from typing import Any, Dict, List
+import ast  # NEW
 
 from dotenv import load_dotenv
 from strands import Agent, tool
@@ -53,6 +54,13 @@ STRICT OUTPUT FORMAT:
 }
 
 NO MARKDOWN. NO COMMENTARY. NO CODE FENCES.
+
+CRITICAL JSON RULES:
+- Use ONLY double quotes (") for JSON keys and string values.
+- You MAY include single quotes (') inside strings, but do NOT escape them with a backslash.
+- NEVER output the sequence \\' anywhere in the JSON.
+- All backslashes MUST be part of valid JSON escapes: \\\", \\\\, \\/, \\b, \\f, \\n, \\r, \\t, or \\uXXXX.
+- The final assistant message MUST be exactly one valid JSON object, with no extra text.
 """
 
 extract_subagent_model = GeminiModel(
@@ -88,9 +96,12 @@ def extract_agent(sources: List[Dict[str, Any]], task_prompt: str) -> Dict[str, 
     if isinstance(result, dict):
         return result
 
-    text = getattr(result, "text", str(result)).strip()
+    text = getattr(result, "text", str(result))
 
+    # -----------------------------
     # Strip accidental fences
+    # -----------------------------
+    text = text.strip()
     if text.startswith("```json"):
         text = text[7:]
     if text.startswith("```"):
@@ -99,14 +110,43 @@ def extract_agent(sources: List[Dict[str, Any]], task_prompt: str) -> Dict[str, 
         text = text[:-3]
     text = text.strip()
 
+    # -----------------------------
+    # Isolate JSON substring
+    # -----------------------------
+    first = text.find("{")
+    last = text.rfind("}")
+    if first != -1 and last != -1 and first < last:
+        json_str = text[first:last + 1]
+    else:
+        json_str = text  # fallback
+
+    # -----------------------------
+    # Fix common invalid escapes
+    # -----------------------------
+    # 1) Replace invalid \' with plain '
+    json_str = json_str.replace("\\'", "'")
+
+    # You can add more fixes here if needed later.
+
+    # -----------------------------
+    # Try JSON parse, then fallback
+    # -----------------------------
     try:
-        data = json.loads(text)
+        data = json.loads(json_str)
+        return data
     except json.JSONDecodeError:
-        data = {
+        # Fallback: try Python-literal style (single quotes etc.)
+        try:
+            lit = ast.literal_eval(json_str)
+            if isinstance(lit, dict):
+                return lit
+        except Exception:
+            pass
+
+        # Final fallback: structured error
+        return {
             "status": "error",
             "task_prompt": task_prompt,
             "results": [],
-            "error_message": f"Could not parse JSON from extract_subagent: {text[:200]}",
+            "error_message": f"Could not parse JSON from extract_subagent: {json_str[:200]}",
         }
-
-    return data
