@@ -10,7 +10,7 @@ from strands.models.gemini import GeminiModel
 
 # Adjust this import to your actual fetch tool
 # from agents.tools.fetch_tool import fetch_url
-from .tools import extract_context
+from .tools import extract_context, cookie_tool
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -75,7 +75,7 @@ extract_subagent_model = GeminiModel(
 extract_subagent = Agent(
     model=extract_subagent_model,
     system_prompt=EXTRACT_AGENT_SYSTEM,
-    tools=[extract_context],
+    tools=[extract_context, cookie_tool],
 )
 
 
