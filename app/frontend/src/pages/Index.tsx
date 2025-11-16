@@ -18,6 +18,7 @@ import { ModelTransparencyBox } from "@/components/ModelTransparencyBox";
 import Iridescence from "@/components/Iridescence";
 import BlurText from "@/components/BlurText";
 
+
 // Mock data types - replace with actual API response types
 interface AuditResult {
   companyName: string;
@@ -64,6 +65,21 @@ const Index = () => {
   const resultsRef = useRef<HTMLDivElement>(null);
   const recognitionRef = useRef<any>(null);
   const iridescenceColor = useMemo(() => [0.584, 0.745, 0.812] as [number, number, number], []);
+  // Thinking animation state
+  const [thinkingStepIndex, setThinkingStepIndex] = useState(0);
+  const [thinkingDots, setThinkingDots] = useState(0);
+
+  const thinkingSteps = useMemo(
+    () => [
+      "Finding official privacy and data-usage pages",
+      "Reading and extracting key clauses from documents",
+      "Identifying data collection, sharing, and tracking practices",
+      "Scoring risks and transparency levels",
+      "Assembling your structured privacy report",
+    ],
+    []
+  );
+
 
   useEffect(() => {
     if (showModal && resultsRef.current) {
@@ -102,6 +118,27 @@ const Index = () => {
       };
     }
   }, [toast]);
+
+  useEffect(() => {
+    if (!isLoading) {
+      setThinkingStepIndex(0);
+      setThinkingDots(0);
+      return;
+    }
+
+    const stepInterval = setInterval(() => {
+      setThinkingStepIndex((prev) => (prev + 1) % thinkingSteps.length);
+    }, 2200);
+
+    const dotsInterval = setInterval(() => {
+      setThinkingDots((prev) => (prev + 1) % 4);
+    }, 450);
+
+    return () => {
+      clearInterval(stepInterval);
+      clearInterval(dotsInterval);
+    };
+  }, [isLoading, thinkingSteps]);
 
 
   const scrollToTop = () => {
@@ -266,6 +303,12 @@ const Index = () => {
                 </div>
               </div>
             </form>
+            {isLoading && (
+              <p className="mt-3 text-xs text-center text-muted-foreground animate-pulse">
+                {thinkingSteps[thinkingStepIndex]}
+                {".".repeat(thinkingDots)}
+              </p>
+            )}
             {error && (
               <div className="mt-4 p-4 rounded-xl bg-destructive/10 border-2 border-destructive/30 animate-fade-in">
                 <p className="text-destructive text-sm text-center font-medium">{error}</p>
