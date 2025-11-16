@@ -5,6 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .master_agent import run_master_pipeline
+from .cache_db import init_db, get_cached_response, cache_response
 
 load_dotenv()
 
@@ -13,6 +14,8 @@ TEAM_ID = os.getenv("TEAM_ID")
 API_TOKEN = os.getenv("API_TOKEN")
 API_ENDPOINT = os.getenv("API_ENDPOINT")
 
+# Initialize database on startup
+init_db()
 
 app = FastAPI()
 
@@ -34,4 +37,18 @@ app.add_middleware(
 
 @app.get("/{company_name}")
 def read_item(company_name: str):
-    return run_master_pipeline(company_name)
+    # Check cache first
+    cached = get_cached_response(company_name)
+    if cached:
+        print(f"✓ Cache hit for {company_name}")
+        return cached
+
+    print(f"✗ Cache miss for {company_name}, fetching from master_agent...")
+    response = run_master_pipeline(company_name)
+
+    # Store in cache
+    resolved_domain = response.get("search_result", {}).get("resolved_domain", "")
+    cache_response(company_name, resolved_domain, response)
+    print(f"✓ Cached response for {company_name}")
+
+    return response

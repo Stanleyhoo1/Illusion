@@ -459,3 +459,4 @@ dist-ssr
 
 node_modules/
 mlruns/
+cache.db
