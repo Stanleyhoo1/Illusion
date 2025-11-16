@@ -46,9 +46,13 @@ def read_item(company_name: str):
     print(f"✗ Cache miss for {company_name}, fetching from master_agent...")
     response = run_master_pipeline(company_name)
 
-    # Store in cache
-    resolved_domain = response.get("search_result", {}).get("resolved_domain", "")
-    cache_response(company_name, resolved_domain, response)
-    print(f"✓ Cached response for {company_name}")
+    # Only cache if there's no error in the response
+    if response.get("status") != "error":
+        # Store in cache
+        resolved_domain = response.get("search_result", {}).get("resolved_domain", "")
+        cache_response(company_name, resolved_domain, response)
+        print(f"✓ Cached response for {company_name}")
+    else:
+        print(f"✗ Error in response, skipping cache for {company_name}")
 
     return response
