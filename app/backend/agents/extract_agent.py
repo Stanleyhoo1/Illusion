@@ -1,7 +1,7 @@
 import os
 import json
 from typing import Any, Dict, List
-import ast  # NEW
+import ast
 
 from dotenv import load_dotenv
 from strands import Agent, tool
@@ -91,65 +91,67 @@ def extract_agent(sources: List[Dict[str, Any]], task_prompt: str) -> Dict[str, 
     Output: structured extraction JSON
     """
 
-    message = json.dumps({"sources": sources, "task_prompt": task_prompt})
+    from langsmith.run_helpers import trace
+    import uuid
 
-    result = extract_subagent(message)
+    run_id = str(uuid.uuid4())
 
-    # Strands may return dict or ModelResponse-like object
-    if isinstance(result, dict):
-        return result
+    # Create root trace
+    with trace(
+        name="extract-agent-root",
+        run_id=run_id,
+        metadata={"task_prompt": task_prompt, "num_sources": len(sources)},
+        tags=["extract-agent", "observability"],
+        project=os.getenv("LANGSMITH_PROJECT", "strands-extract-agent")
+    ):
 
-    text = getattr(result, "text", str(result))
+        # --------------------------
+        # BEGIN ORIGINAL FUNCTION
+        # --------------------------
 
-    # -----------------------------
-    # Strip accidental fences
-    # -----------------------------
-    text = text.strip()
-    if text.startswith("```json"):
-        text = text[7:]
-    if text.startswith("```"):
-        text = text[3:]
-    if text.endswith("```"):
-        text = text[:-3]
-    text = text.strip()
+        message = json.dumps({"sources": sources, "task_prompt": task_prompt})
 
-    # -----------------------------
-    # Isolate JSON substring
-    # -----------------------------
-    first = text.find("{")
-    last = text.rfind("}")
-    if first != -1 and last != -1 and first < last:
-        json_str = text[first:last + 1]
-    else:
-        json_str = text  # fallback
+        result = extract_subagent(message)
 
-    # -----------------------------
-    # Fix common invalid escapes
-    # -----------------------------
-    # 1) Replace invalid \' with plain '
-    json_str = json_str.replace("\\'", "'")
+        # Strands may return dict or ModelResponse-like object
+        if isinstance(result, dict):
+            return result
 
-    # You can add more fixes here if needed later.
+        text = getattr(result, "text", str(result)).strip()
 
-    # -----------------------------
-    # Try JSON parse, then fallback
-    # -----------------------------
-    try:
-        data = json.loads(json_str)
-        return data
-    except json.JSONDecodeError:
-        # Fallback: try Python-literal style (single quotes etc.)
+        # Strip accidental fences
+        if text.startswith("```json"):
+            text = text[7:].strip()
+        if text.startswith("```"):
+            text = text[3:].strip()
+        if text.endswith("```"):
+            text = text[:-3].strip()
+
+        # Isolate JSON
+        first = text.find("{")
+        last = text.rfind("}")
+        if first != -1 and last != -1:
+            json_str = text[first:last + 1]
+        else:
+            json_str = text
+
+        # Fix invalid escape sequences
+        json_str = json_str.replace("\\'", "'")
+
+        # Parse JSON or fallback
         try:
-            lit = ast.literal_eval(json_str)
-            if isinstance(lit, dict):
-                return lit
-        except Exception:
-            pass
+            return json.loads(json_str)
+        except json.JSONDecodeError:
+            try:
+                lit = ast.literal_eval(json_str)
+                if isinstance(lit, dict):
+                    return lit
+            except Exception:
+                pass
 
-        # Final fallback: structured error
-        return {
-            "status": "error",
-            "task_prompt": task_prompt,
-            "results": [],
-            "error_message": f"Could not parse JSON from extract_subagent: {json_str[:200]}",
-        }
+            return {
+                "status": "error",
+                "task_prompt": task_prompt,
+                "results": [],
+                "error_message": f"Could not parse JSON from extract_subagent: {json_str[:200]}",
+            }
