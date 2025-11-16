@@ -7,8 +7,8 @@ from langsmith.run_helpers import traceable, get_current_run_tree
 from strands import Agent, tool
 from strands.models.gemini import GeminiModel
 
-from .tools.fetch_url_tool import fetch_url
-from .tools.resolve_homepage_tool import resolve_homepage
+from .fetch_url_tool import fetch_url
+from .resolve_homepage_tool import resolve_homepage
 
 # -------------------------------
 # Environment
@@ -88,7 +88,7 @@ def extract_first_json(text: str) -> str | None:
 # Cookie Agent Tool (traced)
 # -------------------------------
 @tool
-def cookie_agent(companyName: str) -> str:
+def cookie_tool(companyName: str) -> str:
     """Core tool: runs the cookie extraction agent."""
 
     @traceable(name="cookie-agent-run", metadata={"company": companyName})
