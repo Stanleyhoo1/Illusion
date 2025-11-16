@@ -272,7 +272,8 @@ const Index = () => {
               </div>
             )}
             <p className="text-center text-muted-foreground mt-4 text-sm">
-              <strong>Illusion</strong> makes the fine lines you <strong>overlook</strong> in <strong>legal documents</strong> <strong>transparent</strong> by analysing your target company <strong>name</strong> or <strong>URL</strong> and <strong>flagging</strong> any detail of high significance or impact. <br /><br />Through <strong>risk ratings</strong>, <strong>transparency scores</strong>, <strong>AI summaries</strong> of risky conditions, <strong>protection advice</strong> and <strong>source citations</strong>, Illusion helps you decide whether this company <strong>merits your blessing</strong>.
+              <strong>Illusion reveals how companies really use your data.</strong><br /><br />
+              Enter any name or URL, and we surface hidden policies, assess risks, and give clear, AI-generated insights with trusted sources.
             </p>
           </div>
         </div>
