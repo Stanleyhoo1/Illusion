@@ -1,14 +1,12 @@
 import os
-from typing import Any, Literal
-
+import json
+from typing import Any
 
 from dotenv import load_dotenv
-from pydantic import BaseModel, Field
 from strands import Agent, tool
 from strands.models.gemini import GeminiModel
-from strands.types.exceptions import StructuredOutputException
 
-from .tools.valyu_search_tool import valyu_search
+from agents.tools.valyu_search_tool import valyu_search
 
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -48,12 +46,12 @@ Your goals:
 6. If no relevant sources are found, explain why.
 7. Try to limit sources to 5-10 high-quality results, if some repeat the same information, pick the best ones to keep.
 
-You MUST ALWAYS return an output that follows the structured output, with this exact schema:
+You MUST ALWAYS return ONLY valid JSON, with this exact schema:
 
 {
   "status": "success" | "error",
   "company_or_url": "<original input>",
-  "resolved_domain": "<domain or None>",
+  "resolved_domain": "<domain-or-null>",
   "sources": [
     {
       "url": "<string>",
@@ -65,7 +63,7 @@ You MUST ALWAYS return an output that follows the structured output, with this e
       "relevance_explanation": "<brief explanation of relevance score>"
     }
   ],
-  "error_message": "<string or None>"
+  "error_message": "<string or null>"
 }
 
 Rules:
@@ -74,39 +72,6 @@ Rules:
 - Sort sources by relevance descending.
 - ONLY use sources from the official company domain if possible, no third-party sites like Reddit.
 """
-
-
-class Source(BaseModel):
-    """A source of data."""
-
-    url: str = Field(description="URL of the given policy")
-    policy_type: (
-        Literal["privacy_policy"]
-        | Literal["terms_of_service"]
-        | Literal["cookie_policy"]
-        | Literal["data_protection"]
-        | Literal["other"]
-    ) = Field(description="The type of the policy")
-    title: str | None = Field(description="The title of the policy")
-    summary: str | None = Field(description="The summary of the policy")
-    relevance: float = Field(
-        description="A score on how relevant the result is", ge=0, le=1
-    )
-
-
-class Result(BaseModel):
-    """Result for the Search Agent to return."""
-
-    status: Literal["success"] | Literal["error"] = Field(
-        description="The status of the result"
-    )
-    company_or_url: str = Field(description="The original input")
-    resolved_domain: str | None = Field(description="The resolved domain")
-    sources: list[Source] = Field(description="The list of sources")
-    error_message: str | None = Field(
-        description="The error message if there is one, otherwise null", default=None
-    )
-
 
 search_subagent_model = GeminiModel(
     client_args={"api_key": GEMINI_API_KEY},
@@ -118,7 +83,6 @@ search_subagent = Agent(
     model=search_subagent_model,
     system_prompt=SEARCH_AGENT_SYSTEM,
     tools=[valyu_search],
-    structured_output_model=Result,
 )
 
 
