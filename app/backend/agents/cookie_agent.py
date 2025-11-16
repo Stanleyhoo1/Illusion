@@ -1,6 +1,9 @@
 import os
 import json
 from dotenv import load_dotenv
+
+from langsmith.run_helpers import traceable, get_current_run_tree
+
 from strands import Agent, tool
 from strands.models.gemini import GeminiModel
 
@@ -12,7 +15,6 @@ from .tools.resolve_homepage_tool import resolve_homepage
 # -------------------------------
 load_dotenv()
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-VALYU_API_KEY = os.getenv("VALYU_API_KEY")
 
 # -------------------------------
 # System Prompt
@@ -83,57 +85,73 @@ def extract_first_json(text: str) -> str | None:
     return None
 
 # -------------------------------
-# Wrapper Tool
+# Cookie Agent Tool (traced)
 # -------------------------------
 @tool
 def cookie_agent(companyName: str) -> str:
-    """
-    Main tool to find a company's homepage, fetch its client-side storage data (cookies, 
-    localStorage, sessionStorage), and summarize the results using the Cookie-Extraction Agent.
-    """
-    raw_output = cookie_subagent(companyName)
+    """Core tool: runs the cookie extraction agent."""
 
-    # Standardize raw_output to a string for parsing
+    @traceable(name="cookie-agent-run", metadata={"company": companyName})
+    def run_cookie_subagent(companyName: str):
+        run = get_current_run_tree()
+        if run:
+            run.events.append({"name": "agent.start", "data": {"company": companyName}})
+
+        result = cookie_subagent(companyName)
+
+        if run:
+            run.events.append({"name": "agent.raw_model_output", "data": {"result": result}})
+
+        return result
+
+    # Run the traced subagent
+    raw_output = run_cookie_subagent(companyName)
+
+    # Standardize the output
     if isinstance(raw_output, dict):
         raw_output = json.dumps(raw_output)
     elif not isinstance(raw_output, str):
         raw_output = str(raw_output)
 
+    run = get_current_run_tree()
+    if run:
+        run.events.append({"name": "json.raw_output", "data": {"raw": raw_output}})
+
+    # Extract JSON
     json_text = extract_first_json(raw_output)
-    
-    # 1. Handle case where the model returns no JSON
     if json_text is None:
-        if "error" in raw_output.lower():
-            # Attempt to extract the error message from the raw tool output
-            try:
-                error_msg = json.loads(raw_output).get("error", "Unknown tool error.")
-            except:
-                error_msg = "Unknown tool error (raw output not JSON)."
-            return json.dumps({
-                "status": "error",
-                "results": [],
-                "error_message": f"Tool execution failed: {error_msg}"
-            }, indent=2)
-        
+        if run:
+            run.events.append({"name": "json.error", "data": {"message": "No JSON found"}})
         return json.dumps({
             "status": "error",
             "results": [],
-            "error_message": "No JSON object found in model output. Model failed to adhere to the strict output format."
+            "error_message": "No JSON object found in model output."
         }, indent=2)
 
-    # 2. Handle case where the returned JSON is invalid
+    # Parse JSON
     try:
         parsed = json.loads(json_text)
+        if run:
+            run.events.append({"name": "json.success", "data": {"parsed": parsed}})
     except Exception as e:
+        if run:
+            run.events.append({"name": "json.error", "data": {"message": str(e)}})
         return json.dumps({
             "status": "error",
             "results": [],
-            "error_message": f"Invalid JSON returned by model: {str(e)}. Raw output fragment: {json_text[:200]}"
+            "error_message": f"Invalid JSON returned by model: {str(e)}"
         }, indent=2)
 
-    # 3. Handle case where the JSON is valid but results are empty
+    # Validation
     if not parsed.get("results") and parsed.get("status") == "success":
+        if run:
+            run.events.append({"name": "agent.fix_status", "data": {"message": "Model returned success but no results"}})
         parsed["status"] = "error"
-        parsed["error_message"] = parsed.get("error_message") or "No cookies, localStorage, or sessionStorage could be extracted after page load."
-        
-    return json.dumps(parsed, indent=2)
+        parsed["error_message"] = parsed.get("error_message") or "No cookie/localStorage/sessionStorage info found."
+
+    final_json = json.dumps(parsed, indent=2)
+
+    if run:
+        run.events.append({"name": "agent.final_output", "data": parsed})
+
+    return final_json

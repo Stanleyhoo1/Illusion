@@ -90,78 +90,95 @@ search_subagent = Agent(
 # Tool wrapper: callable by the MASTER AGENT
 # ---------------------------------------------------------
 
-
 @tool
 def search_agent(company_or_url: str) -> dict[str, Any]:
     """
-    Tool wrapper around the search subagent.
+    Tool wrapper around the search subagent with integrated LangSmith tracing.
 
     Input: company name or URL
     Output: JSON with identified policy-related sources.
     Retries the subagent once if the first attempt fails or returns no sources.
     """
-    last_error_text = None
+    from langsmith.run_helpers import trace
+    import uuid
 
-    for attempt in range(2):  # at most two tries
-        result = search_subagent(company_or_url)
+    run_id = str(uuid.uuid4())
 
-        if isinstance(result, dict):
-            data = result
-        else:
-            text = getattr(result, "text", str(result)).strip()
+    # -----------------------------
+    # Root LangSmith Trace
+    # -----------------------------
+    with trace(
+        name="search-agent-root",
+        run_id=run_id,
+        metadata={"query": company_or_url},
+        tags=["search-agent", "observability"],
+        project=os.getenv("LANGSMITH_PROJECT", "strands-search-agent"),
+    ):
+        last_error_text = None
+        attempts_data = None
 
-            # Strip possible fences
-            if text.startswith("```json"):
-                text = text[7:]
-            if text.startswith("```"):
-                text = text[3:]
-            if text.endswith("```"):
-                text = text[:-3]
-            text = text.strip()
+        for attempt in range(2):  # two tries max
+            result = search_subagent(company_or_url)
 
-            try:
-                data = json.loads(text)
-            except json.JSONDecodeError:
-                last_error_text = text
-                data = {
-                    "status": "error",
-                    "company_or_url": company_or_url,
-                    "resolved_domain": None,
-                    "sources": [],
-                    "error_message": "JSON parse error in search_subagent",
-                }
+            if isinstance(result, dict):
+                data = result
+            else:
+                text = getattr(result, "text", str(result)).strip()
 
-        # If this attempt looks good, return immediately
-        if (
-            isinstance(data, dict)
-            and data.get("status") == "success"
-            and data.get("sources")
-        ):
-            # annotate how many attempts it took (optional)
-            data.setdefault("meta", {})
-            data["meta"]["attempts"] = attempt + 1
-            return data
+                # Strip possible markdown fences
+                if text.startswith("```json"):
+                    text = text[7:]
+                if text.startswith("```"):
+                    text = text[3:]
+                if text.endswith("```"):
+                    text = text[:-3]
+                text = text.strip()
 
-        # otherwise loop and try again
+                try:
+                    data = json.loads(text)
+                except json.JSONDecodeError:
+                    last_error_text = text
+                    data = {
+                        "status": "error",
+                        "company_or_url": company_or_url,
+                        "resolved_domain": None,
+                        "sources": [],
+                        "error_message": "JSON parse error in search_subagent",
+                    }
 
-    # If we reach here, both attempts failed or returned empty sources
-    # return the last error-ish thing we have
-    if isinstance(data, dict):
-        data.setdefault("meta", {})
-        data["meta"]["attempts"] = 2
-        if not data.get("error_message") and last_error_text:
-            data["error_message"] = (
-                data.get("error_message")
-                or f"search_agent failed twice; last raw text: {last_error_text[:200]}"
-            )
-        return data
+            # If attempt succeeds with real sources → return
+            if (
+                isinstance(data, dict)
+                and data.get("status") == "success"
+                and data.get("sources")
+            ):
+                data.setdefault("meta", {})
+                data["meta"]["attempts"] = attempt + 1
+                return data
 
-    # extreme fallback
-    return {
-        "status": "error",
-        "company_or_url": company_or_url,
-        "resolved_domain": None,
-        "sources": [],
-        "error_message": "search_agent failed twice with non-dict response",
-        "meta": {"attempts": 2},
-    }
+            attempts_data = data  # store last attempt
+
+        # -----------------------------
+        # Both attempts failed
+        # -----------------------------
+        if isinstance(attempts_data, dict):
+            attempts_data.setdefault("meta", {})
+            attempts_data["meta"]["attempts"] = 2
+
+            if not attempts_data.get("error_message") and last_error_text:
+                attempts_data["error_message"] = (
+                    f"search_agent failed twice; last raw text: "
+                    f"{last_error_text[:200]}"
+                )
+
+            return attempts_data
+
+        # Extreme fallback (should never hit)
+        return {
+            "status": "error",
+            "company_or_url": company_or_url,
+            "resolved_domain": None,
+            "sources": [],
+            "error_message": "search_agent failed twice with non-dict response",
+            "meta": {"attempts": 2},
+        }

@@ -97,8 +97,6 @@ summary_subagent = Agent(
     system_prompt=SUMMARY_AGENT_SYSTEM,
     tools=[],   # no external tools needed here
 )
-
-
 @tool
 def summary_agent(
     search_result: Dict[str, Any],
@@ -106,51 +104,67 @@ def summary_agent(
     user_query: str
 ) -> Dict[str, Any]:
     """
-    Wrapper tool around the summary subagent.
-
-    Input:
-      - search_result: raw JSON from search_agent
-      - extraction_result: JSON from extract_agent
-      - user_query: original natural language query
-
-    Output:
-      - JSON structured summary with scores, reasoning & evidence
+    Wrapper tool around the summary subagent, with automatic LangSmith tracing.
     """
 
-    payload = {
-        "search_result": search_result,
-        "extraction_result": extraction_result,
-        "query": user_query
-    }
+    from langsmith.run_helpers import trace
+    import uuid
 
-    message = json.dumps(payload)
+    run_id = str(uuid.uuid4())
 
-    result = summary_subagent(message)
-
-    if isinstance(result, dict):
-        return result
-
-    text = getattr(result, "text", str(result)).strip()
-
-    # Strip accidental markdown fences
-    if text.startswith("```json"):
-        text = text[7:]
-    if text.startswith("```"):
-        text = text[3:]
-    if text.endswith("```"):
-        text = text[:-3]
-
-    text = text.strip()
-
-    try:
-        data = json.loads(text)
-    except json.JSONDecodeError:
-        data = {
-            "status": "error",
+    # Root LangSmith run for this invocation
+    with trace(
+        name="summary-agent-root",
+        run_id=run_id,
+        metadata={
             "query": user_query,
-            "summary": None,
-            "sources_used": [],
-            "error_message": f"Could not parse JSON from summary_subagent: {text[:200]}",
+            "num_search_results": len(search_result.get("results", [])),
+            "num_extracted": len(extraction_result.get("results", [])),
+        },
+        tags=["summary-agent", "observability"],
+        project=os.getenv("LANGSMITH_PROJECT", "strands-summary-agent"),
+    ):
+
+        # ----------------------------------------------------
+        # ORIGINAL LOGIC (unchanged)
+        # ----------------------------------------------------
+
+        payload = {
+            "search_result": search_result,
+            "extraction_result": extraction_result,
+            "query": user_query
         }
 
-    return data
+        message = json.dumps(payload)
+
+        # Run the LLM agent
+        result = summary_subagent(message)
+
+        if isinstance(result, dict):
+            return result
+
+        text = getattr(result, "text", str(result)).strip()
+
+        # Strip accidental markdown fences
+        if text.startswith("```json"):
+            text = text[7:]
+        if text.startswith("```"):
+            text = text[3:]
+        if text.endswith("```"):
+            text = text[:-3]
+
+        text = text.strip()
+
+        # Parse JSON
+        try:
+            data = json.loads(text)
+        except json.JSONDecodeError:
+            data = {
+                "status": "error",
+                "query": user_query,
+                "summary": None,
+                "sources_used": [],
+                "error_message": f"Could not parse JSON from summary_subagent: {text[:200]}",
+            }
+
+        return data
