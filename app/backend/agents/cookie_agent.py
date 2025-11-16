@@ -155,5 +155,3 @@ def cookie_agent(companyName: str) -> str:
         run.events.append({"name": "agent.final_output", "data": parsed})
 
     return final_json
-
-print(cookie_agent("Google"))
