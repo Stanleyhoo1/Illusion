@@ -10,9 +10,9 @@ from strands.models.gemini import GeminiModel
 from string import Template
 
 import re
-from agents.search_agent import search_agent
-from agents.extract_agent import extract_agent
-from agents.summary_agent import summary_agent
+from .agents.search_agent import search_agent
+from .agents.extract_agent import extract_agent
+from .agents.summary_agent import summary_agent
 
 import mlflow
 import mlflow.strands
@@ -33,10 +33,11 @@ model = GeminiModel(
     params={"temperature": 0.1},
 )
 
+
 def run_master_pipeline(
     company_or_url: str,
     user_query: Optional[str] = None,
-    task_prompt: str = "privacy policies, terms of service, and data practices"
+    task_prompt: str = "privacy policies, terms of service, and data practices",
 ) -> Dict[str, Any]:
     """
     Deterministic master orchestrator:
@@ -81,7 +82,7 @@ def run_master_pipeline(
                         "tool": "search_agent",
                         "tool_input": f"company_or_url={company_or_url}",
                         "tool_output_used": "exception",
-                        "reasoning": "Failed during search_agent call, so we cannot proceed."
+                        "reasoning": "Failed during search_agent call, so we cannot proceed.",
                     }
                 ],
             },
@@ -150,7 +151,8 @@ def run_master_pipeline(
             "timing": {"estimated_total_ms": total_ms},
             "trace": {
                 "tools_used": tools_used + ["extract_agent"],
-                "steps": trace_steps + [
+                "steps": trace_steps
+                + [
                     {
                         "step_index": extract_step_index,
                         "action": "Call extract_agent on sources with task_prompt",
@@ -197,7 +199,8 @@ def run_master_pipeline(
             "timing": {"estimated_total_ms": total_ms},
             "trace": {
                 "tools_used": tools_used + ["summary_agent"],
-                "steps": trace_steps + [
+                "steps": trace_steps
+                + [
                     {
                         "step_index": summary_step_index,
                         "action": "Call summary_agent to synthesize final report",
@@ -246,25 +249,29 @@ def run_master_pipeline(
     try:
         last_trace_id = mlflow.get_last_active_trace_id()
         trace = mlflow.get_trace(trace_id=last_trace_id)
-        usage = trace.info.token_usage  # dict: {'input_tokens': ..., 'output_tokens': ..., 'total_tokens': ...}
+        usage = (
+            trace.info.token_usage
+        )  # dict: {'input_tokens': ..., 'output_tokens': ..., 'total_tokens': ...}
 
         # Optionally also get per-span usage if you want super detailed breakdown
         detailed_usage = []
         for span in trace.data.spans:
             span_usage = span.get_attribute("mlflow.chat.tokenUsage")
             if span_usage:
-                cost_in = 0.3/1000000
-                cost_out = 2.5/1000000
+                cost_in = 0.3 / 1000000
+                cost_out = 2.5 / 1000000
 
                 input_cost = span_usage["input_tokens"] * cost_in
                 output_cost = span_usage["output_tokens"] * cost_out
-                detailed_usage.append({
-                    "span_name": span.name,
-                    "input_tokens": span_usage["input_tokens"],
-                    "output_tokens": span_usage["output_tokens"],
-                    "total_tokens": span_usage["total_tokens"],
-                    "total_cost_usd": input_cost + output_cost,
-                })
+                detailed_usage.append(
+                    {
+                        "span_name": span.name,
+                        "input_tokens": span_usage["input_tokens"],
+                        "output_tokens": span_usage["output_tokens"],
+                        "total_tokens": span_usage["total_tokens"],
+                        "total_cost_usd": input_cost + output_cost,
+                    }
+                )
     except Exception:
         usage = None
         detailed_usage = []
@@ -280,8 +287,7 @@ def run_master_pipeline(
 
 
 if __name__ == "__main__":
-
     res = run_master_pipeline("Anthropic")
     print()
-    print("="*100)
+    print("=" * 100)
     print(json.dumps(res))

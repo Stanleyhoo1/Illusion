@@ -14,7 +14,7 @@ import { UserProtectionAdviceBox } from "@/components/UserProtectionAdviceBox";
 import { SourcesBox } from "@/components/SourcesBox";
 import { TransparencyScoreCircular } from "@/components/TransparencyScoreCircular";
 import { ModelTransparencyBox } from "@/components/ModelTransparencyBox";
-import digestionData from "@/data/sampleDigestion.json";
+// import digestionData from "@/data/sampleDigestion.json";
 import Iridescence from "@/components/Iridescence";
 import BlurText from "@/components/BlurText";
 
@@ -56,6 +56,7 @@ interface AuditResult {
 const Index = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [input, setInput] = useState("");
+  const [digestionData, setDigestionData] = useState<any | null>(null);
   const [showModal, setShowModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isListening, setIsListening] = useState(false);
@@ -129,24 +130,46 @@ const Index = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!input.trim()) return;
-
     setIsLoading(true);
     setError(null);
     setShowModal(false);
 
-    // Simulate analysis
-    setTimeout(() => {
-      setIsLoading(false);
-      
-      // Simulate random error for demonstration
-      const hasError = Math.random() < 0.3; // 30% chance of error
-      
-      if (hasError) {
-        setError("Unable to analyze this company. Please check the name or URL and try again.");
-      } else {
-        setShowModal(true);
+    const company = encodeURIComponent(input.trim());
+    const url = `http://127.0.0.1:8000/${company}`;
+
+    try {
+      console.log(`Fetching from: ${url}`);
+      const resp = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Accept": "application/json",
+        },
+      });
+
+      if (!resp.ok) {
+        const text = await resp.text().catch(() => null);
+        throw new Error(text || `Server returned ${resp.status}`);
       }
-    }, 2000);
+
+      const data = await resp.json();
+      console.log("API Response:", data);
+      setDigestionData(data);
+      setShowModal(true);
+    } catch (err: any) {
+      console.error("Failed to fetch digestion data:", err);
+      const errorMsg = err?.message?.includes("Failed to fetch")
+        ? "Could not connect to the server. Make sure the backend is running at http://127.0.0.1:8000"
+        : err?.message || "Unable to analyze this company. Please check the name or URL and try again.";
+      setError(errorMsg);
+      setDigestionData(null);
+      toast({
+        title: "Error",
+        description: errorMsg,
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -274,15 +297,21 @@ const Index = () => {
             key_findings={digestionData.final_summary.summary.key_findings}
             final_recommendation={digestionData.final_summary.summary.final_recommendation}
           />
-          <UserProtectionAdviceBox advice={digestionData.final_summary.summary.user_protection_advice} />
-          <ModelTransparencyBox data={{
-            token_usage: digestionData.timing.token_usage.total_tokens,
-            total_cost: digestionData.timing.token_usage_detailed[0].total_cost_usd,
-            elapsed_time: digestionData.timing.estimated_total_ms / 1000,
-            tools_used: digestionData.trace.tools_used,
-            thoughts: digestionData.trace.steps.map((step: any) => step.reasoning)
-          }} />
-          <SourcesBox sources={digestionData.final_summary.sources_used} />
+          {digestionData.final_summary?.summary?.user_protection_advice && (
+            <UserProtectionAdviceBox advice={digestionData.final_summary.summary.user_protection_advice} />
+          )}
+          {digestionData.timing && (
+            <ModelTransparencyBox data={{
+              token_usage: digestionData.timing.token_usage?.total_tokens || 0,
+              total_cost: digestionData.timing.token_usage_detailed?.[0]?.total_cost_usd || 0,
+              elapsed_time: (digestionData.timing.estimated_total_ms || 0) / 1000,
+              tools_used: digestionData.trace?.tools_used || [],
+              thoughts: digestionData.trace?.steps?.map((step: Record<string, unknown>) => (step as Record<string, unknown>).reasoning) || []
+            }} />
+          )}
+          {digestionData.final_summary?.sources_used && (
+            <SourcesBox sources={digestionData.final_summary.sources_used} />
+          )}
         </div>
       )}
 

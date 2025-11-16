@@ -1,0 +1,21 @@
+execution_duration_ms: 18213
+request_preview: '[{"role": "user", "content": [{"text": "Google"}]}]'
+request_time: '2025-11-16T10:30:41.409Z'
+response_preview: '{"status": "success", "company_or_url": "Google", "resolved_domain":
+  "google.com", "sources": [{"url": "https://policies.google.com/privacy?hl=en-US&utm_source=valyu.ai&utm_medium=referral",
+  "policy_type": "privacy_policy", "title": "Privacy Policy – Privacy & Terms – Google",
+  "summary": "Google collects information to provide and improve its services, including
+  data you provide (name, password, phone, payment info, content you create), information
+  from your apps, browsers, and devices (unique identifiers, settings, IP address,
+  crash reports), your activity (searches, videos, ad interactions, voice info, purchase
+  activity, communication, third-party site activity, Chrome history), and location
+  information (GPS, IP address, sensor data, nearby devices). Data is used for service
+  provision, maintenance, improvement, new service development, personalization (content
+  and ads), performance measurement, communication, and protection against fraud and
+  security issues. Google does not sell p...'
+state: OK
+trace_id: tr-886c4855f31f301091814d91345bfd85
+trace_location:
+  mlflow_experiment:
+    experiment_id: '0'
+  type: MLFLOW_EXPERIMENT
