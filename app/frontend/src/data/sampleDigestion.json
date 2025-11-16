@@ -1,0 +1,466 @@
+{
+  "status": "success",
+  "query": "Summarize Anthropic's privacy policies, terms of service, and data practices (data collection, usage, sharing, retention, user rights, cookies, API usage, etc.).",
+  "search_result": {
+    "status": "success",
+    "company_or_url": "Anthropic",
+    "resolved_domain": "anthropic.com",
+    "sources": [
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10458704-how-does-anthropic-protect-the-personal-data-of-claude-ai-users",
+        "policy_type": "data_protection",
+        "title": "How does Anthropic protect the personal data of Claude.ai users? | Anthropic Privacy Center",
+        "summary": "Anthropic protects Claude.ai user data through encryption (in transit and at rest) and limited employee access. Access is only granted with explicit user consent for feedback or for Trust & Safety team review to enforce Usage Policy, with strict access controls. The company employs industry-standard security measures like regular monitoring, anti-malware, multi-factor authentication, and annual security training. International data transfers are protected via adequacy decisions or Standard Contractual Clauses.",
+        "relevance": 0.98,
+        "relevance_explanation": "Directly explains data protection measures, encryption, access controls, and international data transfers for Claude.ai users."
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10023541-what-cookies-does-anthropic-use",
+        "policy_type": "cookie_policy",
+        "title": "What Cookies Does Anthropic Use? | Anthropic Privacy Center",
+        "summary": "Anthropic uses necessary cookies for basic service functionality (authentication, preferences, security), which cannot be refused. Analytics cookies are used for website traffic and performance analysis, and marketing cookies for targeted advertising. Users can control cookie preferences via 'Privacy Choices' on anthropic.com, 'Your privacy choices' on claude.ai, or by enabling global privacy controls in their browser.",
+        "relevance": 0.99,
+        "relevance_explanation": "Directly lists and describes cookie types used by Anthropic and provides information on user controls."
+      },
+      {
+        "url": "https://support.anthropic.com/en/articles/7996885-how-do-you-use-personal-data-in-model-training",
+        "policy_type": "data_usage",
+        "title": "How Do You Use Personal Data in Model Training? | Anthropic Help Center",
+        "summary": "Anthropic trains its large language models using publicly available information, licensed datasets, and user-provided data (if opted-in). Personal data is incidentally included but not actively sought or used for profiling, marketing, or sale. Privacy safeguards include de-linking user IDs, filtering sensitive data, and post-training techniques to minimize personal data in outputs. Users control whether their chats are used for model improvement and can adjust settings anytime.",
+        "relevance": 0.97,
+        "relevance_explanation": "Provides a detailed explanation of data sources for model training, privacy safeguards, and user control over data usage."
+      },
+      {
+        "url": "https://www.anthropic.com/news/updates-to-our-consumer-terms",
+        "policy_type": "privacy_policy",
+        "title": "Updates to Consumer Terms and Privacy Policy | Anthropic",
+        "summary": "Anthropic updated its Consumer Terms and Privacy Policy, allowing users of Free, Pro, and Max plans to choose whether their chat and coding session data is used for model training. If opted in, data retention extends to five years; otherwise, it's 30 days. Data is filtered for sensitive information and not sold to third parties. These updates do not apply to commercial services like Claude for Work or API use.",
+        "relevance": 0.95,
+        "relevance_explanation": "Directly addresses privacy policy and terms of service changes, including data collection, usage, retention, and user control for consumer products."
+      },
+      {
+        "url": "https://support.anthropic.com/en/articles/7996866-how-long-do-you-store-personal-data",
+        "policy_type": "data_protection",
+        "title": "How long do you store my data? | Anthropic Privacy Center",
+        "summary": "If users allow data for model improvement, Anthropic retains data for up to 5 years for new or resumed chats. If not, data is retained for 30 days. Incognito chats are never used for model improvement. Users can delete conversations, which are removed from history immediately and from backend storage within 30 days. Data flagged for Usage Policy violations is retained for up to 2 years (inputs/outputs) or 7 years (classification scores). Feedback data is retained for 5 years.",
+        "relevance": 0.96,
+        "relevance_explanation": "Provides specific details on data retention periods based on user choices and policy violations."
+      },
+      {
+        "url": "https://www.anthropic.com/research/confidential-inference-trusted-vms",
+        "policy_type": "data_protection",
+        "title": "Confidential Inference via Trusted Virtual Machines | Anthropic",
+        "summary": "Anthropic is researching Confidential Inference using trusted virtual machines to cryptographically guarantee user data privacy. This involves processing encrypted data only within verifiable, secure server environments. The goal is to protect sensitive user data and model weights by ensuring data remains encrypted except at the exact moment of processing within a highly restricted environment, using hardware-based security controls and attestation.",
+        "relevance": 0.9,
+        "relevance_explanation": "Explains advanced technical measures for data protection and confidentiality through confidential computing research."
+      },
+      {
+        "url": "https://www.anthropic.com/news/updating-our-usage-policy",
+        "policy_type": "terms_of_service",
+        "title": "Updating our Usage Policy | Anthropic",
+        "summary": "Anthropic updated its Usage Policy (formerly Acceptable Use Policy) to clarify allowed and prohibited applications of its products. Key changes include consolidating guidelines into 'Universal Usage Standards,' clarifying policies on election integrity and misinformation, adding requirements for high-risk use cases (e.g., healthcare, legal), and expanding law enforcement use for tailored cases. It also explicitly forbids using products to analyze biometric data or censor content for governments.",
+        "relevance": 0.92,
+        "relevance_explanation": "Details updates to the usage policy, which functions as a terms of service, covering prohibited uses, high-risk cases, and privacy protections."
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10807912-how-does-clio-analyze-usage-patterns-while-protecting-user-data",
+        "policy_type": "data_usage",
+        "title": "How does Clio analyze usage patterns while protecting user data? | Anthropic Privacy Center",
+        "summary": "Anthropic uses a system called Clio for privacy-preserving analysis of AI usage patterns. Clio automatically anonymizes and aggregates information, extracting general trends without revealing private details. It applies safeguards like minimum aggregation thresholds and automated verification to prevent individual identification. Anthropic employees do not access raw user conversations for research purposes.",
+        "relevance": 0.9,
+        "relevance_explanation": "Explains a specific system (Clio) for analyzing user data and usage patterns while maintaining privacy."
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/9267385-does-anthropic-act-as-a-data-processor-or-controller",
+        "policy_type": "data_protection",
+        "title": "Does Anthropic Act as a Data Processor or Controller? | Anthropic Privacy Center",
+        "summary": "For commercial products like Claude for Work and the Anthropic API, Anthropic acts as a 'Processor' of data, processing it only as instructed by the customer (the 'Controller'). Customers control team members and data usage. Anthropic does not use this data for model training unless the customer participates in the Development Partner Program. Customers can access and export user data.",
+        "relevance": 0.88,
+        "relevance_explanation": "Clarifies data roles (processor/controller) for commercial users, data usage, and customer control over their data."
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10030352-what-personal-data-will-be-processed-by-computer-use",
+        "policy_type": "data_usage",
+        "title": "What personal data will be processed by Computer use? | Anthropic Privacy Center",
+        "summary": "The 'Computer use' beta feature for commercial customers processes screenshots from the computer's display, along with user inputs and outputs, to enable Claude to interact with interfaces. Anthropic does not collect additional data from the computer interface. Screenshots are automatically deleted from the backend within 30 days, unless otherwise agreed, and retained to enforce the Usage Policy.",
+        "relevance": 0.85,
+        "relevance_explanation": "Provides specific details on data collection and retention for a particular product feature ('Computer use')."
+      }
+    ],
+    "error_message": null,
+    "meta": {
+      "attempts": 1
+    }
+  },
+  "extraction_result": {
+    "status": "success",
+    "task_prompt": "privacy policies, terms of service, and data practices",
+    "results": [
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10458704-how-does-anthropic-protect-the-personal-data-of-claude-ai-users",
+        "content_summary": "Anthropic protects Claude.ai user data through encryption (in transit and at rest) and limited employee access. Access is only granted with explicit user consent for feedback or for Trust & Safety team review to enforce Usage Policy, with strict access controls. The company employs industry-standard security measures like regular monitoring, anti-malware, multi-factor authentication, and annual security training. International data transfers are protected via adequacy decisions or Standard Contractual Clauses.",
+        "extracted_points": [
+          "User data is automatically encrypted both in transit and at rest.",
+          "Anthropic employees have limited access to conversations, requiring explicit user consent for feedback or review by the Trust & Safety team for Usage Policy enforcement.",
+          "Strict access controls are in place for designated Trust & Safety team members.",
+          "Industry-standard security measures include regular security monitoring, vulnerability checks, anti-malware protection, multi-factor authentication, strict password policies, mobile device management, and network segmentation.",
+          "Organizational security measures include annual security and privacy training for all employees, regular security assessments, comprehensive system inventory management, secure company device management policies, and least privilege access.",
+          "International data transfers outside the EEA or UK are protected through Adequacy Decisions or Standard Contractual Clauses (SCCs)."
+        ],
+        "relevance": 0.98
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10023541-what-cookies-does-anthropic-use",
+        "content_summary": "Anthropic uses necessary cookies for basic service functionality (authentication, preferences, security), which cannot be refused. Analytics cookies are used for website traffic and performance analysis, and marketing cookies for targeted advertising. Users can control cookie preferences via 'Privacy Choices' on anthropic.com, 'Your privacy choices' on claude.ai, or by enabling global privacy controls in their browser.",
+        "extracted_points": [
+          "Necessary cookies are used for basic service functionality (authentication, site preferences, security) and cannot be refused.",
+          "Analytics cookies are used to enhance service performance by analyzing website traffic, performance, and user interaction.",
+          "Marketing cookies are used for targeted advertising and aggregated reporting of marketing content effectiveness.",
+          "Users can control analytics and marketing cookie preferences through 'Privacy Choices' on anthropic.com, 'Your privacy choices' on claude.ai, or by enabling global privacy controls in their browser.",
+          "Cookies are used across various domains including .anthropic.com, .claude.ai, and console.anthropic.com.",
+          "Third-party cookies from providers like Stripe, Cloudflare, Google, Intercom, LinkedIn, Facebook, Reddit, and TikTok are also utilized."
+        ],
+        "relevance": 0.99
+      },
+      {
+        "url": "https://support.anthropic.com/en/articles/7996885-how-do-you-use-personal-data-in-model-training",
+        "content_summary": "Anthropic trains its large language models using publicly available information, licensed datasets, and user-provided data (if opted-in). Personal data is incidentally included but not actively sought or used for profiling, marketing, or sale. Privacy safeguards include de-linking user IDs, filtering sensitive data, and post-training techniques to minimize personal data in outputs. Users control whether their chats are used for model improvement and can adjust settings anytime.",
+        "extracted_points": [
+          "Large language models are trained on publicly available information, licensed datasets, and user-provided data (if opted-in).",
+          "Personal data is incidentally included in training data but not actively sought or used for contacting individuals, building profiles, marketing, or selling information.",
+          "Privacy safeguards include strict policies against accessing password-protected pages and due diligence on licensed data.",
+          "Models are trained with 'Constitutional AI' principles to respect privacy and minimize disclosure of incidentally captured personal data.",
+          "User chats and coding sessions, if opted-in for improvement, are automatically de-linked from user IDs.",
+          "Tools and processes are used to filter or obfuscate sensitive data, and post-training techniques minimize personal data in Claude's outputs.",
+          "Users maintain full control over their privacy settings and can adjust them at any time.",
+          "The Privacy Policy explains user rights regarding personal data, including requests for copies, objections to processing, or deletion."
+        ],
+        "relevance": 0.97
+      },
+      {
+        "url": "https://www.anthropic.com/news/updates-to-our-consumer-terms",
+        "content_summary": "Anthropic updated its Consumer Terms and Privacy Policy, allowing users of Free, Pro, and Max plans to choose whether their chat and coding session data is used for model training. If opted in, data retention extends to five years; otherwise, it's 30 days. Data is filtered for sensitive information and not sold to third parties. These updates do not apply to commercial services like Claude for Work or API use.",
+        "extracted_points": [
+          "Users of Claude Free, Pro, and Max plans (including Claude Code) can choose whether their chat and coding session data is used for model training.",
+          "If opted in for model training, data retention for new or resumed chats and coding sessions is extended to five years.",
+          "If opted out, the existing 30-day data retention period applies.",
+          "Users have until October 8, 2025, to accept the updated Consumer Terms and make their data usage decision.",
+          "Sensitive data is filtered or obfuscated using automated processes and tools.",
+          "User data is not sold to third parties.",
+          "These updates do not apply to commercial services such as Claude for Work, Claude for Government, Claude for Education, or API use."
+        ],
+        "relevance": 0.95
+      },
+      {
+        "url": "https://support.anthropic.com/en/articles/7996866-how-long-do-you-store-my-data",
+        "content_summary": "If users allow data for model improvement, Anthropic retains data for up to 5 years for new or resumed chats. If not, data is retained for 30 days. Incognito chats are never used for model improvement. Users can delete conversations, which are removed from history immediately and from backend storage within 30 days. Data flagged for Usage Policy violations is retained for up to 2 years (inputs/outputs) or 7 years (classification scores). Feedback data is retained for 5 years.",
+        "extracted_points": [
+          "If users allow data for model improvement, chats and coding sessions are retained for up to 5 years (for new or resumed chats).",
+          "If users do not allow data for model improvement, chats are retained in back-end storage for up to 30 days.",
+          "Incognito chats are never used for model improvement and follow the 30-day retention period.",
+          "Users can delete conversations, which are immediately removed from chat history and deleted from back-end storage within 30 days.",
+          "Data flagged for Usage Policy violations (inputs/outputs) is retained for up to 2 years, and classification scores for up to 7 years.",
+          "Feedback data is retained for 5 years.",
+          "Data may be retained longer if anonymized or de-identified for research/statistical purposes, or as required by law.",
+          "This policy applies to consumer products (Claude Free, Pro, Max, Claude Code)."
+        ],
+        "relevance": 0.96
+      },
+      {
+        "url": "https://www.anthropic.com/research/confidential-inference-trusted-vms",
+        "content_summary": "Anthropic is researching Confidential Inference using trusted virtual machines to cryptographically guarantee user data privacy. This involves processing encrypted data only within verifiable, secure server environments. The goal is to protect sensitive user data and model weights by ensuring data remains encrypted except at the exact moment of processing within a highly restricted environment, using hardware-based security controls and attestation.",
+        "extracted_points": [
+          "Anthropic is researching 'Confidential Inference' via trusted virtual machines to cryptographically guarantee user data privacy and model weight security.",
+          "Sensitive data remains encrypted everywhere except for the exact moment it needs to be processed, within a highly restricted, verifiable environment.",
+          "A chain of trust attests to software security and enforces rules on encryption key usage.",
+          "The trusted environment features encrypted memory (hardware-isolated), disabled debugging features, and cryptographic proof of correct code execution.",
+          "A keyserver validates the trusted environment's security before releasing decryption keys.",
+          "User requests are encrypted before arriving at Anthropic servers, decrypted at the API server, re-encrypted, and then handled in encrypted form by the Inference Server.",
+          "Model weights are stored encrypted, decrypted only at the trusted loader, and never released from there.",
+          "This is early-stage research, and specific designs or features for future offerings are not yet finalized."
+        ],
+        "relevance": 0.9
+      },
+      {
+        "url": "https://www.anthropic.com/news/updating-our-usage-policy",
+        "content_summary": "Anthropic updated its Usage Policy (formerly Acceptable Use Policy) to clarify allowed and prohibited applications of its products. Key changes include consolidating guidelines into 'Universal Usage Standards,' clarifying policies on election integrity and misinformation, adding requirements for high-risk use cases (e.g., healthcare, legal), and expanding law enforcement use for tailored cases. It also explicitly forbids using products to analyze biometric data or censor content for governments.",
+        "extracted_points": [
+          "Anthropic updated its Acceptable Use Policy, now called 'Usage Policy,' effective June 6, 2024.",
+          "Policies are streamlined into 'Universal Usage Standards' applicable to both businesses and consumers.",
+          "Prohibitions include using products for political lobbying, campaigning, interfering with election processes, or disseminating false/misleading election information.",
+          "Additional safety measures are required for high-risk use cases, such as those affecting healthcare decisions and legal guidance.",
+          "Organizations can incorporate the API into products for minors if they implement safety features and disclose AI usage.",
+          "Law enforcement authorities in expanded countries may use products for tailored use cases (e.g., call center support, document summarization).",
+          "Explicit prohibitions include analyzing biometric data to infer characteristics (e.g., race, religious beliefs), building recognition systems to infer emotions for interrogation, or censoring content for government organizations."
+        ],
+        "relevance": 0.92
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10807912-how-does-clio-analyze-usage-patterns-while-protecting-user-data",
+        "content_summary": "Anthropic uses a system called Clio for privacy-preserving analysis of AI usage patterns. Clio automatically anonymizes and aggregates information, extracting general trends without revealing private details. It applies safeguards like minimum aggregation thresholds and automated verification to prevent individual identification. Anthropic employees do not access raw user conversations for research purposes.",
+        "extracted_points": [
+          "Anthropic uses Clio for privacy-preserving analysis of AI usage patterns.",
+          "Clio automatically anonymizes and aggregates information, extracting general patterns and trends while omitting private or sensitive details.",
+          "Privacy safeguards include minimum aggregation thresholds and automated verification to prevent individual identification.",
+          "Anthropic employees do not access raw user conversations or customer-specific data for research purposes.",
+          "Insights focus on broad, aggregate patterns, never analyzing specific individual or customer behavior.",
+          "Extensive testing, auditing, and benchmarking validate that Clio's outputs contain no identifiable private information for research purposes.",
+          "Aggregate, privacy-preserving insights may be shared with external audiences or the public, with careful aggregation thresholds.",
+          "A different version of Clio is used to improve safety systems, where results can be linked to individual accounts, but with strict access controls for authorized staff."
+        ],
+        "relevance": 0.9
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/9267385-does-anthropic-act-as-a-data-processor-or-controller",
+        "content_summary": "For commercial products like Claude for Work and the Anthropic API, Anthropic acts as a 'Processor' of data, processing it only as instructed by the customer (the 'Controller'). Customers control team members and data usage. Anthropic does not use this data for model training unless the customer participates in the Development Partner Program. Customers can access and export user data.",
+        "extracted_points": [
+          "For commercial products (Claude for Work, Anthropic API), the customer is the 'Controller' of the data.",
+          "Anthropic acts as a 'Processor' of the data on behalf of the customer.",
+          "Anthropic processes data only as instructed by the customer to provide the Claude service.",
+          "Customers have control over team members and provide instructions for data usage.",
+          "Customers may access and export user-submitted data (e.g., conversation history).",
+          "Anthropic does not use data from commercial products to train its models, unless the customer opts into the Development Partner Program.",
+          "This policy applies to commercial products and not to consumer products."
+        ],
+        "relevance": 0.88
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10030352-what-personal-data-will-be-processed-by-computer-use",
+        "content_summary": "The 'Computer use' beta feature for commercial customers processes screenshots from the computer's display, along with user inputs and outputs, to enable Claude to interact with interfaces. Anthropic does not collect additional data from the computer interface. Screenshots are automatically deleted from the backend within 30 days, unless otherwise agreed, and retained to enforce the Usage Policy.",
+        "extracted_points": [
+          "The 'Computer use' beta feature for commercial customers processes screenshots from the computer's display, along with user inputs and outputs.",
+          "This data enables Claude to interact with computer interfaces.",
+          "Anthropic does not collect additional data from the computer interface beyond screenshots, inputs, and outputs.",
+          "Screenshots are automatically deleted from the backend within 30 days, unless otherwise agreed.",
+          "Screenshots are retained to enforce the Usage Policy.",
+          "This feature is for commercial customers."
+        ],
+        "relevance": 0.85
+      }
+    ],
+    "error_message": null
+  },
+  "final_summary": {
+    "status": "success",
+    "query": "Summarize Anthropic's privacy policies, terms of service, and data practices (data collection, usage, sharing, retention, user rights, cookies, API usage, etc.).",
+    "summary": {
+      "overview": "Anthropic, the developer of Claude AI, employs a multi-faceted approach to data privacy, distinguishing between consumer and commercial users. For consumer products, users have significant control over whether their chat and coding session data is used for model training, with an opt-in model. Data not used for training is retained for 30 days, while opted-in data can be kept for up to 5 years. Anthropic emphasizes that personal data is incidentally included in training but not actively sought for profiling or sale, and employs safeguards like de-linking user IDs and filtering sensitive information. Data is encrypted in transit and at rest, and employee access is strictly limited. For commercial products (like Claude for Work or API), Anthropic acts as a data processor, meaning customers (controllers) dictate data usage, and data is generally not used for model training unless explicitly opted into a partner program. The company uses necessary, analytics, and marketing cookies, with user controls available for the latter two. Anthropic explicitly states it does not sell user data to third parties.",
+      "key_findings": [
+        "Users of consumer Claude products have an opt-in choice for their chat and coding session data to be used for model training.",
+        "Data retention periods vary significantly based on user consent for model training (30 days if opted out, up to 5 years if opted in).",
+        "Anthropic does not sell user data to third parties and explicitly states personal data is not used for profiling or marketing.",
+        "Strong security measures are in place, including encryption, limited employee access, and industry-standard security protocols.",
+        "For commercial products, Anthropic acts as a data processor, giving customers control over their data and generally not using it for model training.",
+        "The company uses necessary, analytics, and marketing cookies, providing users with controls over analytics and marketing cookies.",
+        "Incognito chats are never used for model improvement and are retained for 30 days."
+      ],
+      "ratings": {
+        "data_collection_risk": 3,
+        "data_sharing_risk": 2,
+        "tracking_risk": 3,
+        "transparency_score": 4
+      },
+      "reasoning": [
+        {
+          "rating": "data_collection_risk",
+          "evidence": [
+            {
+              "url": "https://support.anthropic.com/en/articles/7996885-how-do-you-use-personal-data-in-model-training",
+              "point": "Large language models are trained on publicly available information, licensed datasets, and user-provided data (if opted-in)."
+            },
+            {
+              "url": "https://www.anthropic.com/news/updates-to-our-consumer-terms",
+              "point": "Users of Claude Free, Pro, and Max plans (including Claude Code) can choose whether their chat and coding session data is used for model training."
+            },
+            {
+              "url": "https://support.anthropic.com/en/articles/7996885-how-do-you-use-personal-data-in-model-training",
+              "point": "Personal data is incidentally included in training data but not actively sought or used for contacting individuals, building profiles, marketing, or selling information."
+            }
+          ],
+          "explanation": "Anthropic collects a broad range of data, including user-provided content, publicly available information, and licensed datasets for model training. The risk is mitigated by the explicit opt-in requirement for consumer chat data to be used for model training and the stated policy against actively seeking personal data for profiling or sale. However, the incidental inclusion of personal data in training data and the collection of screenshots for certain commercial beta features (though with specific retention policies) warrant a moderate risk rating."
+        },
+        {
+          "rating": "data_sharing_risk",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/updates-to-our-consumer-terms",
+              "point": "User data is not sold to third parties."
+            },
+            {
+              "url": "https://support.anthropic.com/en/articles/7996885-how-do-you-use-personal-data-in-model-training",
+              "point": "Personal data is incidentally included in training data but not actively sought or used for contacting individuals, building profiles, marketing, or selling information."
+            },
+            {
+              "url": "https://privacy.anthropic.com/en/articles/9267385-does-anthropic-act-as-a-data-processor-or-controller",
+              "point": "Anthropic does not use data from commercial products to train its models, unless the customer opts into the Development Partner Program."
+            }
+          ],
+          "explanation": "Anthropic explicitly states that user data is not sold to third parties and is not used for profiling or marketing. For commercial products, Anthropic acts as a data processor, giving customers control over their data and generally not using it for model training. While some aggregate, privacy-preserving insights may be shared, the strong stance against selling or using personal data for external profiling significantly lowers the data sharing risk."
+        },
+        {
+          "rating": "tracking_risk",
+          "evidence": [
+            {
+              "url": "https://privacy.anthropic.com/en/articles/10023541-what-cookies-does-anthropic-use",
+              "point": "Necessary cookies are used for basic service functionality (authentication, site preferences, security) and cannot be refused."
+            },
+            {
+              "url": "https://privacy.anthropic.com/en/articles/10023541-what-cookies-does-anthropic-use",
+              "point": "Analytics cookies are used to enhance service performance by analyzing website traffic, performance, and user interaction."
+            },
+            {
+              "url": "https://privacy.anthropic.com/en/articles/10023541-what-cookies-does-anthropic-use",
+              "point": "Marketing cookies are used for targeted advertising and aggregated reporting of marketing content effectiveness."
+            },
+            {
+              "url": "https://privacy.anthropic.com/en/articles/10023541-what-cookies-does-anthropic-use",
+              "point": "Users can control analytics and marketing cookie preferences through 'Privacy Choices' on anthropic.com, 'Your privacy choices' on claude.ai, or by enabling global privacy controls in their browser."
+            }
+          ],
+          "explanation": "Anthropic uses necessary, analytics, and marketing cookies, including third-party cookies from various providers. While necessary cookies cannot be refused, users are provided with clear mechanisms to control analytics and marketing cookie preferences. The use of marketing cookies for targeted advertising, even with user controls, presents a moderate tracking risk."
+        },
+        {
+          "rating": "transparency_score",
+          "evidence": [
+            {
+              "url": "https://www.anthropic.com/news/updates-to-our-consumer-terms",
+              "point": "Users of Claude Free, Pro, and Max plans (including Claude Code) can choose whether their chat and coding session data is used for model training."
+            },
+            {
+              "url": "https://support.anthropic.com/en/articles/7996885-how-do-you-use-personal-data-in-model-training",
+              "point": "Users maintain full control over their privacy settings and can adjust them at any time."
+            },
+            {
+              "url": "https://privacy.anthropic.com/en/articles/10458704-how-does-anthropic-protect-the-personal-data-of-claude-ai-users",
+              "point": "Anthropic employees have limited access to conversations, requiring explicit user consent for feedback or review by the Trust & Safety team for Usage Policy enforcement."
+            },
+            {
+              "url": "https://privacy.anthropic.com/en/articles/9267385-does-anthropic-act-as-a-data-processor-or-controller",
+              "point": "For commercial products (Claude for Work, Anthropic API), the customer is the 'Controller' of the data."
+            }
+          ],
+          "explanation": "Anthropic provides detailed and accessible information across its privacy center and help articles, clearly outlining data collection, usage, retention, and user controls. The distinction between consumer and commercial data practices is well-explained, and the company highlights user rights and options for managing privacy settings, including explicit opt-in for model training. The transparency regarding employee access and data roles for commercial users contributes to a high transparency score."
+        }
+      ],
+      "user_protection_advice": [
+        "**Manage Model Training Consent**: For consumer products, actively review and adjust your privacy settings to choose whether your chat and coding session data is used for model training. If you opt out, your data will be retained for a shorter period (30 days).",
+        "**Utilize Incognito Chats**: For sensitive conversations, use Incognito chats, as they are never used for model improvement and follow the 30-day retention period.",
+        "**Delete Conversations**: You can delete conversations from your chat history, which will also remove them from backend storage within 30 days.",
+        "**Control Cookies**: Exercise your 'Privacy Choices' on anthropic.com or claude.ai to manage your analytics and marketing cookie preferences. Consider enabling global privacy controls in your browser.",
+        "**Understand Data Retention**: Be aware that if you opt-in for model training, your data may be retained for up to 5 years. Data flagged for Usage Policy violations can be retained for up to 2-7 years.",
+        "**Review Commercial Terms**: If you are a commercial user (Claude for Work, API), understand that you are the 'Controller' of your data and Anthropic acts as a 'Processor.' Ensure your internal policies align with Anthropic's practices and your chosen settings, especially regarding the Development Partner Program."
+      ],
+      "final_recommendation": "Users should be moderately careful when using Anthropic's consumer products. While Anthropic offers significant user controls, particularly the opt-in for model training and clear policies against selling data, the broad collection of data for training (if opted-in) and the use of marketing cookies warrant attention. Users should actively manage their privacy settings, especially regarding data usage for model improvement and cookie preferences, to align with their comfort level. For commercial users, the control largely rests with the customer, making it crucial to understand the 'Controller' and 'Processor' roles."
+    },
+    "sources_used": [
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10458704-how-does-anthropic-protect-the-personal-data-of-claude-ai-users",
+        "policy_type": "data_protection",
+        "relevance": 0.98,
+        "title": "How does Anthropic protect the personal data of Claude.ai users? | Anthropic Privacy Center"
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10023541-what-cookies-does-anthropic-use",
+        "policy_type": "cookie_policy",
+        "relevance": 0.99,
+        "title": "What Cookies Does Anthropic Use? | Anthropic Privacy Center"
+      },
+      {
+        "url": "https://support.anthropic.com/en/articles/7996885-how-do-you-use-personal-data-in-model-training",
+        "policy_type": "data_usage",
+        "relevance": 0.97,
+        "title": "How Do You Use Personal Data in Model Training? | Anthropic Help Center"
+      },
+      {
+        "url": "https://www.anthropic.com/news/updates-to-our-consumer-terms",
+        "policy_type": "privacy_policy",
+        "relevance": 0.95,
+        "title": "Updates to Consumer Terms and Privacy Policy | Anthropic"
+      },
+      {
+        "url": "https://support.anthropic.com/en/articles/7996866-how-long-do-you-store-my-data",
+        "policy_type": "data_protection",
+        "relevance": 0.96,
+        "title": "How long do you store my data? | Anthropic Privacy Center"
+      },
+      {
+        "url": "https://www.anthropic.com/research/confidential-inference-trusted-vms",
+        "policy_type": "data_protection",
+        "relevance": 0.9,
+        "title": "Confidential Inference via Trusted Virtual Machines | Anthropic"
+      },
+      {
+        "url": "https://www.anthropic.com/news/updating-our-usage-policy",
+        "policy_type": "terms_of_service",
+        "relevance": 0.92,
+        "title": "Updating our Usage Policy | Anthropic"
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10807912-how-does-clio-analyze-usage-patterns-while-protecting-user-data",
+        "policy_type": "data_usage",
+        "relevance": 0.9,
+        "title": "How does Clio analyze usage patterns while protecting user data? | Anthropic Privacy Center"
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/9267385-does-anthropic-act-as-a-data-processor-or-controller",
+        "policy_type": "data_protection",
+        "relevance": 0.88,
+        "title": "Does Anthropic Act as a Data Processor or Controller? | Anthropic Privacy Center"
+      },
+      {
+        "url": "https://privacy.anthropic.com/en/articles/10030352-what-personal-data-will-be-processed-by-computer-use",
+        "policy_type": "data_usage",
+        "relevance": 0.85,
+        "title": "What personal data will be processed by Computer use? | Anthropic Privacy Center"
+      }
+    ],
+    "error_message": null
+  },
+  "timing": {
+    "estimated_total_ms": 227319,
+    "token_usage": {
+      "input_tokens": 5616,
+      "output_tokens": 4441,
+      "total_tokens": 10057
+    },
+    "token_usage_detailed": [
+      {
+        "span_name": "chat",
+        "input_tokens": 5616,
+        "output_tokens": 4441,
+        "total_tokens": 10057,
+        "total_cost_usd": 0.012787300000000001
+      }
+    ]
+  },
+  "trace": {
+    "tools_used": ["search_agent", "extract_agent", "summary_agent"],
+    "steps": [
+      {
+        "step_index": 0,
+        "action": "Call search_agent to resolve company and find policy URLs",
+        "tool": "search_agent",
+        "tool_input": "company_or_url=Anthropic",
+        "tool_output_used": "full search_agent JSON",
+        "reasoning": "We need a list of relevant policy URLs and metadata before extraction."
+      },
+      {
+        "step_index": 1,
+        "action": "Call extract_agent on sources with task_prompt",
+        "tool": "extract_agent",
+        "tool_input": "sources=[10 items], task_prompt='privacy policies, terms of service, and data practices'",
+        "tool_output_used": "full extract_agent JSON",
+        "reasoning": "We need the structured extraction of only the relevant data practices before summarizing."
+      },
+      {
+        "step_index": 2,
+        "action": "Call summary_agent to synthesize final report",
+        "tool": "summary_agent",
+        "tool_input": "search_result + extraction_result + user_query",
+        "tool_output_used": "full summary_agent JSON",
+        "reasoning": "This step produces the final structured report with ratings, risks, and advice."
+      }
+    ]
+  },
+  "error_message": null
+}
