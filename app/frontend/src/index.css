@@ -1,0 +1,159 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+All colors MUST be HSL.
+*/
+
+@layer base {
+  :root {
+    --background: 200 25% 94%;
+    --foreground: 210 20% 30%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 210 20% 30%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 210 20% 30%;
+
+    --primary: 205 40% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 15% 65%;
+    --secondary-foreground: 210 20% 20%;
+
+    --muted: 200 20% 88%;
+    --muted-foreground: 210 15% 50%;
+
+    --accent: 195 30% 75%;
+    --accent-foreground: 210 20% 30%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 200 20% 85%;
+    --input: 200 20% 85%;
+    --ring: 205 35% 60%;
+
+    --radius: 0.25rem;
+
+    --light-blue: 200 30% 90%;
+
+    /* iOS Liquid Glass Colors */
+    --glass-bg: 0 0% 100%;
+    --glass-border-start: 205 35% 70%;
+    --glass-border-end: 210 20% 75%;
+    --glass-shadow: 200 25% 82%;
+    --glass-highlight: 195 25% 92%;
+    --glass-surface: 200 20% 96%;
+    --glass-overlay: 200 15% 98%;
+    --glass-vibrant: 205 40% 65%;
+    
+    --sidebar-background: 200 20% 96%;
+    --sidebar-foreground: 210 20% 30%;
+    --sidebar-primary: 205 35% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 200 25% 90%;
+    --sidebar-accent-foreground: 210 20% 30%;
+    --sidebar-border: 200 20% 85%;
+    --sidebar-ring: 205 35% 60%;
+
+    /* iOS-style smooth transitions and shadows */
+    --transition-glass: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --shadow-glass: 0 10px 40px -5px rgba(136, 170, 195, 0.2), 0 4px 12px -2px rgba(168, 190, 205, 0.15);
+    --shadow-glass-lg: 0 20px 60px -10px rgba(136, 170, 195, 0.3), 0 8px 20px -4px rgba(168, 190, 205, 0.2);
+    --shadow-glass-xl: 0 30px 80px -15px rgba(136, 170, 195, 0.35), 0 12px 30px -6px rgba(168, 190, 205, 0.25);
+    --shadow-glass-glow: 0 0 60px rgba(136, 170, 195, 0.4), 0 0 30px rgba(168, 190, 205, 0.3);
+  }
+
+  .dark {
+    --background: 210 20% 12%;
+    --foreground: 200 15% 90%;
+
+    --card: 210 18% 16%;
+    --card-foreground: 200 15% 90%;
+
+    --popover: 210 18% 16%;
+    --popover-foreground: 200 15% 90%;
+
+    --primary: 205 35% 55%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 210 15% 40%;
+    --secondary-foreground: 200 15% 90%;
+
+    --muted: 210 15% 22%;
+    --muted-foreground: 200 12% 60%;
+
+    --accent: 205 25% 45%;
+    --accent-foreground: 200 15% 90%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 210 15% 25%;
+    --input: 210 15% 25%;
+    --ring: 205 35% 55%;
+
+    /* iOS Liquid Glass Colors - Dark Mode */
+    --glass-bg: 210 18% 18%;
+    --glass-border-start: 205 35% 40%;
+    --glass-border-end: 210 20% 45%;
+    --glass-shadow: 210 20% 8%;
+    --glass-highlight: 205 20% 30%;
+    --glass-surface: 210 18% 15%;
+    --glass-overlay: 210 15% 12%;
+    --glass-vibrant: 205 40% 60%;
+
+    --sidebar-background: 210 18% 14%;
+    --sidebar-foreground: 200 15% 90%;
+    --sidebar-primary: 205 35% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 210 15% 22%;
+    --sidebar-accent-foreground: 200 15% 90%;
+    --sidebar-border: 210 15% 25%;
+    --sidebar-ring: 205 35% 55%;
+
+    /* iOS-style smooth transitions and shadows - Dark */
+    --transition-glass: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    --shadow-glass: 0 10px 40px -5px rgba(107, 142, 165, 0.3), 0 4px 12px -2px rgba(136, 156, 170, 0.2);
+    --shadow-glass-lg: 0 20px 60px -10px rgba(107, 142, 165, 0.4), 0 8px 20px -4px rgba(136, 156, 170, 0.3);
+    --shadow-glass-xl: 0 30px 80px -15px rgba(107, 142, 165, 0.5), 0 12px 30px -6px rgba(136, 156, 170, 0.35);
+    --shadow-glass-glow: 0 0 60px rgba(107, 142, 165, 0.5), 0 0 30px rgba(136, 156, 170, 0.4);
+  }
+}
+
+@layer utilities {
+  @keyframes eye-blur-in {
+    0% {
+      filter: blur(10px);
+      opacity: 0;
+      transform: translateY(-50px);
+    }
+    50% {
+      filter: blur(5px);
+      opacity: 0.5;
+      transform: translateY(5px);
+    }
+    100% {
+      filter: blur(0px);
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .animate-eye-blur {
+    animation: eye-blur-in 0.7s ease-out forwards;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
